@@ -52,7 +52,7 @@ class SimklPkceTest {
         assertTrue(url.startsWith("https://simkl.com/oauth/authorize?"))
         assertTrue("client_id=client+id" in url || "client_id=client%20id" in url)
         assertTrue("code_challenge_method=S256" in url)
-        assertTrue("redirect_uri=nuvio%3A%2F%2Fauth%2Fsimkl" in url)
+        assertTrue("redirect_uri=watchfirst%3A%2F%2Fauth%2Fsimkl" in url)
     }
 
     @Test

@@ -116,8 +116,8 @@ import com.nuvio.app.core.build.WatchfirstLinks
 internal val AuthTextPrimary = Color(0xFFF5F7F8)
 internal val AuthTextSecondary = Color(0xFF969CA3)
 private val AuthTextMuted = Color(0xFF6E7178)
-private val AuthPrimaryButtonBackground = Color(0xFFF5F5F5)
-private val AuthPrimaryButtonText = Color(0xFF111111)
+private val AuthPrimaryButtonBackground = Color(0xFF24FF00)
+private val AuthPrimaryButtonText = Color(0xFF000000)
 internal val AuthFieldBackground = Color.White.copy(alpha = 0.04f)
 private val AuthFieldBackgroundMobile = Color.White.copy(alpha = 0.035f)
 internal val AuthFieldBorder = Color.White.copy(alpha = 0.08f)
@@ -1149,23 +1149,23 @@ private fun Modifier.authGradientBackground(largeScreen: Boolean): Modifier = dr
     )
     val colorStops = if (largeScreen) {
         arrayOf(
-            0f to Color(0xFF21113B),
-            0.14f to Color(0xFF21113B),
-            0.26f to Color(0xFF1A0E2F),
-            0.36f to Color(0xFF130A23),
-            0.48f to Color(0xFF0A060F),
-            0.60f to Color(0xFF050408),
+            0f to Color(0xFF0E2E0A),
+            0.14f to Color(0xFF0E2E0A),
+            0.26f to Color(0xFF0B2408),
+            0.36f to Color(0xFF081A06),
+            0.48f to Color(0xFF040D03),
+            0.60f to Color(0xFF020502),
             0.70f to Color.Black,
             1f to Color.Black,
         )
     } else {
         arrayOf(
-            0f to Color(0xFF21113B),
-            0.12f to Color(0xFF21113B),
-            0.24f to Color(0xFF1A0E2F),
-            0.34f to Color(0xFF130A23),
-            0.44f to Color(0xFF0A060F),
-            0.58f to Color(0xFF050408),
+            0f to Color(0xFF0E2E0A),
+            0.12f to Color(0xFF0E2E0A),
+            0.24f to Color(0xFF0B2408),
+            0.34f to Color(0xFF081A06),
+            0.44f to Color(0xFF040D03),
+            0.58f to Color(0xFF020502),
             0.64f to Color.Black,
             1f to Color.Black,
         )

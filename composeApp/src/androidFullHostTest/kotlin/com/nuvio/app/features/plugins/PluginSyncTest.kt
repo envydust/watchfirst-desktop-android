@@ -1,5 +1,6 @@
 package com.nuvio.app.features.plugins
 
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.network.ServerCapabilities
 import com.nuvio.app.core.network.ServerConfiguration
 import com.nuvio.app.core.network.ServerConfigurationRepository
@@ -16,6 +17,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -44,6 +46,7 @@ class PluginSyncTest {
         PluginRepository.clearLocalState()
         AddonRepository.clearLocalState()
         server.start()
+        assumeTrue(AppFeaturePolicy.pluginsEnabled && AppFeaturePolicy.customServerConnectionsEnabled)
         assertTrue(
             ServerConfigurationRepository.saveCustom(
                 ServerConfiguration(

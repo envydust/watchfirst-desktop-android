@@ -30,7 +30,7 @@ fun ProfileBackgroundBackdrop(
     }.collectAsStateWithLifecycle()
     val backgroundCatalog by ProfileBackgroundRepository.catalog.collectAsStateWithLifecycle()
     val profileColor = remember(profile?.avatarColorHex) {
-        profile?.avatarColorHex?.let(::parseHexColor) ?: Color(0xFF1E88E5)
+        profile?.avatarColorHex?.let(::parseHexColor) ?: Color(0xFF24FF00)
     }
     val backgroundSelection = remember(
         profile?.profileBackgroundId,

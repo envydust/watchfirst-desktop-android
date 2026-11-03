@@ -3,6 +3,7 @@ package com.nuvio.app.features.updater
 import android.app.Application
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.build.AppVersionConfig
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -11,6 +12,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.withContext
+import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -37,6 +39,7 @@ class AppUpdaterControllerTest {
         AndroidAppUpdaterPlatform.initialize(context)
         preferences = UpdatePreferences("1.1.0")
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        assumeTrue(AppFeaturePolicy.inAppUpdaterEnabled)
     }
 
     @AfterTest
