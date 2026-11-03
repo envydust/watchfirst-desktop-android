@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.updates_github_api_error
 import org.jetbrains.compose.resources.getString
+import com.nuvio.app.core.build.WatchfirstLinks
 
 @Serializable
 internal data class GitHubReleaseDto(
@@ -40,10 +41,10 @@ internal object AppUpdaterRepository {
     suspend fun getLatestChannelUpdate(channel: UpdateChannel): Result<AppUpdate> = runCatching {
         val response = httpRequestRaw(
             method = "GET",
-            url = "https://api.github.com/repos/NuvioMedia/NuvioMobile/${releasePath(channel)}",
+            url = "${WatchfirstLinks.UPDATES_API_URL}/${releasePath(channel)}",
             headers = mapOf(
                 "Accept" to "application/vnd.github+json",
-                "User-Agent" to "NuvioMobile",
+                "User-Agent" to "WATCHFIRST",
             ),
             body = "",
         )

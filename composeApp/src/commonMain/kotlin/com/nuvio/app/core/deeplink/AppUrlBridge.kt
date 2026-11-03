@@ -10,6 +10,7 @@ import io.ktor.http.encodeURLParameter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.nuvio.app.core.build.WatchfirstLinks
 
 internal sealed interface AppDeepLink {
     data class Meta(
@@ -59,13 +60,13 @@ fun buildMetaDeepLinkUrl(
     type: String,
     id: String,
 ): String = buildString {
-    append("nuvio://meta?type=")
+    append("watchfirst://meta?type=")
     append(type.trim().encodeURLParameter())
     append("&id=")
     append(id.trim().encodeURLParameter())
 }
 
-fun buildDownloadsDeepLinkUrl(): String = "nuvio://downloads"
+fun buildDownloadsDeepLinkUrl(): String = "watchfirst://downloads"
 
 internal fun parseAppDeepLink(url: String): AppDeepLink? {
     val parsedUrl = runCatching { Url(url) }.getOrNull() ?: return null
@@ -80,9 +81,9 @@ internal fun parseAppDeepLink(url: String): AppDeepLink? {
     val host = parsedUrl.host.lowercase()
     val pathSegments = parsedUrl.pathSegments.map(String::trim).filter(String::isNotBlank)
     if (scheme == "https") {
-        return if (host == "nuvio.tv" && pathSegments.firstOrNull() == "party") partyDeepLink(pathSegments.getOrNull(1)) else null
+        return if (host == WatchfirstLinks.HOST && pathSegments.firstOrNull() == "party") partyDeepLink(pathSegments.getOrNull(1)) else null
     }
-    if (scheme != "nuvio") return null
+    if (scheme != "watchfirst") return null
 
     return when (host) {
         "meta" -> {

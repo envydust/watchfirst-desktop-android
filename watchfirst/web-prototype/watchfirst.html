@@ -1,0 +1,1099 @@
+<title>WATCHFIRST</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Anton+SC&display=swap">
+
+<style>
+/* WATCHFIRST — dark-first streaming UI */
+:root {
+  color-scheme: dark;
+  --bg: #060a06;
+  --surface: #1f1f1f;
+  --fg: #e5e5e5;
+  --fg-bright: #fff;
+  --fg-muted: #8c8c8c;
+  --accent: #24ff00;
+  --accent-h: #1de600;
+  --border: rgba(255,255,255,0.13);
+  --input-bg: #454545;
+  --input-focus: #6d6d6e;
+  --warn: #e87c03;
+  --ff-d: 'Anton SC', Impact, sans-serif;
+  --ff-b: 'Inter', system-ui, -apple-system, sans-serif;
+  --r: 4px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--ff-b);min-height:100%}
+
+.logo{font-family:var(--ff-d);font-size:clamp(26px,5vw,42px);letter-spacing:.04em;user-select:none}
+.logo-w{color:#fff}
+.logo-f{color:#24ff00}
+
+/* SPLASH */
+.splash{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.splash-logo{font-family:var(--ff-d);font-size:clamp(56px,14vw,110px);animation:logoIn 1.4s ease forwards}
+@keyframes logoIn{0%{opacity:0;transform:scale(.85)}60%{opacity:1;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+
+/* LOGIN */
+.login-bg{min-height:100vh;background:linear-gradient(to bottom,rgba(0,0,0,.72) 0%,rgba(0,0,0,.25) 45%,rgba(0,0,0,.72) 100%),radial-gradient(ellipse at 50% 42%,#0d2e0d 0%,#071407 40%,#020602 75%,#000 100%);display:flex;flex-direction:column}
+.login-hd{padding-block:28px;padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}
+.login-main{flex:1;display:flex;align-items:center;justify-content:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login-card{background:rgba(0,0,0,.82);border-radius:6px;padding:clamp(36px,5vw,60px) clamp(28px,5vw,68px);width:100%;max-width:450px;backdrop-filter:blur(12px)}
+.login-title{font-size:clamp(22px,4vw,32px);font-weight:700;color:var(--fg-bright);margin-bottom:28px;letter-spacing:-.02em}
+
+/* Floating-label inputs */
+.fl-g{position:relative;margin-bottom:14px}
+.fl-i{width:100%;background:var(--input-bg);border:2px solid transparent;border-radius:var(--r);color:var(--fg-bright);font-family:var(--ff-b);font-size:16px;padding:22px 16px 8px;outline:none;transition:background .18s,border-color .18s}
+.fl-i:focus{background:var(--input-focus);border-color:rgba(36,255,0,.55)}
+.fl-l{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:15px;pointer-events:none;transition:all .15s ease}
+.fl-i:focus~.fl-l,.fl-i:not(:placeholder-shown)~.fl-l{top:11px;transform:none;font-size:11px;letter-spacing:.04em;color:#aaa}
+
+.btn-red{width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--r);font-family:var(--ff-b);font-size:16px;font-weight:700;padding:17px;cursor:pointer;margin-top:22px;transition:background .15s,transform .1s;letter-spacing:.02em}
+.btn-red:hover:not(:disabled){background:var(--accent-h)}
+.btn-red:active:not(:disabled){transform:scale(.98)}
+.btn-red:disabled{opacity:.5;cursor:default}
+
+.login-meta{display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--fg-muted)}
+.chk-lbl{display:flex;align-items:center;gap:7px;cursor:pointer}
+.chk-lbl input{accent-color:var(--accent);width:14px;height:14px}
+.txt-lnk{color:var(--fg-muted);text-decoration:none;cursor:pointer;background:none;border:none;font-family:var(--ff-b);font-size:inherit;padding:0}
+.txt-lnk:hover{text-decoration:underline;color:var(--fg-bright)}
+.signup-p{text-align:center;margin-top:48px;font-size:15px;color:var(--fg-muted)}
+.signup-p a{color:var(--fg-bright);text-decoration:none;cursor:pointer;font-weight:500}
+.signup-p a:hover{text-decoration:underline}
+.err-bar{background:var(--warn);color:#fff;padding:10px 14px;border-radius:var(--r);font-size:13px;margin-top:10px;font-weight:500}
+
+/* PROFILES */
+.prof-screen{min-height:100vh;background:radial-gradient(ellipse at 50% 38%,#0d2e0d 0%,#071407 35%,#020602 70%,#000 100%);display:flex;flex-direction:column}
+.prof-hd{display:flex;align-items:center;justify-content:space-between;padding-block:24px;padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}
+.prof-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-block:40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));min-width:0}
+.prof-heading{font-size:clamp(22px,4.5vw,48px);font-weight:400;color:var(--fg-bright);margin-bottom:clamp(28px,5vw,56px);text-align:center}
+.prof-grid{display:flex;flex-wrap:wrap;gap:clamp(14px,2.5vw,28px);justify-content:center;max-width:640px}
+
+.p-item{display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;outline:none}
+.p-item:focus-visible .p-av{border-color:#fff;transform:scale(1.06)}
+.p-av{width:clamp(76px,14vw,130px);height:clamp(76px,14vw,130px);border-radius:var(--r);display:flex;align-items:center;justify-content:center;border:3px solid transparent;position:relative;overflow:hidden;transition:transform .15s ease,border-color .15s ease;user-select:none}
+.p-av-init{font-size:clamp(28px,5.5vw,52px);font-weight:800;color:rgba(255,255,255,.9);line-height:1}
+.p-item:hover .p-av{transform:scale(1.08);border-color:#fff}
+.p-item:hover .p-name{color:var(--fg-bright)}
+.p-av.editing{border-color:rgba(255,255,255,.4)}
+.p-edit-ov{position:absolute;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+.p-edit-ic{width:clamp(22px,4vw,38px);height:clamp(22px,4vw,38px)}
+.p-name{font-size:clamp(12px,1.8vw,15px);color:var(--fg-muted);font-weight:500;transition:color .15s;text-align:center}
+
+.p-add-btn{width:clamp(76px,14vw,130px);height:clamp(76px,14vw,130px);border-radius:var(--r);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s,transform .15s;background:none}
+.p-item:hover .p-add-btn{border-color:#fff;transform:scale(1.08)}
+
+.p-add-form{width:clamp(76px,14vw,130px);background:var(--surface);border-radius:var(--r);padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;border:2px solid var(--border)}
+.p-add-inp{width:100%;background:var(--input-bg);border:1px solid transparent;border-radius:3px;color:var(--fg-bright);font-family:var(--ff-b);font-size:13px;padding:7px 8px;outline:none;text-align:center}
+.p-add-inp:focus{border-color:var(--accent)}
+.p-add-inp::placeholder{color:var(--fg-muted)}
+.p-add-ok{background:var(--accent);border:none;border-radius:3px;color:#000;font-family:var(--ff-b);font-size:12px;font-weight:600;padding:6px 14px;cursor:pointer;width:100%;transition:background .15s}
+.p-add-ok:hover{background:var(--accent-h)}
+
+.p-rm{background:none;border:1px solid var(--border);border-radius:3px;color:var(--fg-muted);font-family:var(--ff-b);font-size:11px;padding:3px 10px;cursor:pointer;transition:border-color .12s,color .12s}
+.p-rm:hover{border-color:var(--fg-muted);color:var(--fg-bright)}
+
+.btn-mng{margin-top:clamp(28px,5vw,56px);background:transparent;border:1.5px solid var(--fg-muted);color:var(--fg-muted);font-family:var(--ff-b);font-size:13px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:10px 30px;cursor:pointer;border-radius:2px;transition:all .15s}
+.btn-mng:hover{border-color:var(--fg-bright);color:var(--fg-bright)}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:200;padding:max(16px,env(safe-area-inset-left,0px));animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:#1c1c1c;border-radius:8px;padding:clamp(28px,4vw,48px);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.modal-title{font-size:clamp(20px,3.5vw,26px);font-weight:700;color:var(--fg-bright);margin-bottom:6px;letter-spacing:-.02em}
+.modal-sub{color:var(--fg-muted);font-size:14px;margin-bottom:28px;line-height:1.5}
+
+.plans-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.plan-card{background:var(--surface);border:1.5px solid var(--border);border-radius:6px;padding:18px 16px;cursor:pointer;transition:border-color .15s,transform .15s,background .15s;text-align:left}
+.plan-card:hover{border-color:rgba(229,9,20,.5);transform:translateY(-2px)}
+.plan-card.sel{border-color:var(--accent);background:rgba(229,9,20,.08)}
+.plan-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:8px}
+.plan-price{font-size:clamp(20px,4vw,24px);font-weight:800;color:var(--fg-bright);line-height:1}
+.plan-per{font-size:11px;color:var(--fg-muted);margin-top:2px;margin-bottom:14px}
+.plan-feat{display:flex;gap:7px;font-size:12px;color:var(--fg-muted);margin-bottom:5px;align-items:flex-start}
+.plan-ck{color:var(--accent);flex-shrink:0}
+
+.s-inp{width:100%;background:var(--input-bg);border:1.5px solid transparent;border-radius:var(--r);color:var(--fg-bright);font-family:var(--ff-b);font-size:15px;padding:13px 14px;outline:none;margin-bottom:10px;transition:border-color .15s,background .15s}
+.s-inp:focus{border-color:rgba(229,9,20,.5);background:var(--input-focus)}
+.s-inp::placeholder{color:var(--fg-muted)}
+.btn-ghost{background:none;border:none;color:var(--fg-muted);font-family:var(--ff-b);font-size:13px;cursor:pointer;display:block;width:100%;text-align:center;margin-top:14px;padding:6px;transition:color .15s}
+.btn-ghost:hover{color:var(--fg-bright)}
+
+/* HOME — full-bleed backdrop, centered pill nav, rows bleed off the right edge */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:#000}
+.home{position:relative;min-height:100vh;background:#000;color:#fff;overflow-x:hidden}
+.hm-bd{position:absolute;inset:0 0 auto;height:min(90vh,880px);overflow:hidden;z-index:0}
+.hm-bd-layer{position:absolute;inset:0;animation:bdIn .9s ease}
+.hm-bd-layer svg{width:100%;height:100%;display:block}
+@keyframes bdIn{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+.hm-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.92) 0%,rgba(0,0,0,.62) 36%,rgba(0,0,0,.05) 72%),linear-gradient(0deg,#000 0%,rgba(0,0,0,.55) 24%,transparent 52%),linear-gradient(180deg,rgba(0,0,0,.6) 0%,transparent 16%)}
+.hm-nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding-block:14px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));transition:background .3s}
+.hm-nav.solid{background:rgba(0,0,0,.9);backdrop-filter:blur(10px)}
+.hm-left{justify-self:start;display:flex;align-items:center;gap:14px}
+.hm-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;cursor:pointer;border:2px solid rgba(255,255,255,.25);transition:border-color .15s;user-select:none}
+.hm-av:hover{border-color:#24ff00}
+.hm-tabs{display:flex;gap:4px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:4px;backdrop-filter:blur(8px)}
+.hm-tab{display:flex;align-items:center;gap:7px;background:none;border:none;color:rgba(255,255,255,.7);font-family:var(--ff-b);font-size:14px;font-weight:500;padding:8px 16px;border-radius:999px;cursor:pointer;transition:background .15s,color .15s}
+.hm-tab:hover{color:#fff}
+.hm-tab:focus-visible{outline:2px solid #24ff00;outline-offset:2px}
+.hm-tab.act{background:rgba(255,255,255,.14);color:#fff;font-weight:700}
+.hm-tab.act svg{color:#24ff00}
+.hm-right{justify-self:end;display:flex;align-items:center;gap:16px;color:rgba(255,255,255,.8);font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.hm-icbtn{background:none;border:none;color:inherit;cursor:pointer;display:flex;padding:4px}
+.hm-icbtn:hover{color:#fff}
+
+.hm-hero{position:relative;z-index:1;min-height:min(64vh,620px);display:flex;flex-direction:column;justify-content:flex-end;max-width:780px;padding-bottom:28px;padding-left:max(48px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.hm-eyebrow{display:flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#24ff00;margin-bottom:10px}
+.hm-title{font-family:var(--ff-d);font-weight:400;font-size:clamp(44px,8vw,104px);line-height:.9;text-transform:uppercase;text-wrap:balance;margin-bottom:14px;text-shadow:0 4px 30px rgba(0,0,0,.5);animation:txtIn .6s ease}
+@keyframes txtIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hm-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:rgba(255,255,255,.88);margin-bottom:8px;font-variant-numeric:tabular-nums}
+.hm-sep{display:inline-block;width:1px;height:14px;background:rgba(255,255,255,.35)}
+.hm-score{background:#24ff00;color:#000;font-weight:800;font-size:12px;padding:2px 7px;border-radius:4px}
+.hm-age{border:1px solid rgba(255,255,255,.45);font-size:11px;font-weight:700;padding:1px 6px;border-radius:3px}
+.hm-genres{font-size:14px;color:rgba(255,255,255,.72);margin-bottom:12px}
+.hm-desc{font-size:clamp(14px,1.3vw,16px);line-height:1.55;color:rgba(255,255,255,.84);max-width:52ch;margin-bottom:22px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.hm-btns{display:flex;gap:10px;flex-wrap:wrap}
+.hm-play{display:flex;align-items:center;gap:9px;background:#24ff00;color:#000;border:none;border-radius:6px;font-family:var(--ff-b);font-size:15px;font-weight:800;padding:12px 26px;cursor:pointer;transition:transform .12s,box-shadow .2s}
+.hm-play:hover{box-shadow:0 0 0 4px rgba(36,255,0,.25)}
+.hm-play:active{transform:scale(.97)}
+.hm-ghost{display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:6px;font-family:var(--ff-b);font-size:15px;font-weight:700;padding:12px 22px;cursor:pointer;backdrop-filter:blur(6px);transition:background .15s,color .15s,border-color .15s}
+.hm-ghost:hover{background:rgba(255,255,255,.22)}
+.hm-ghost.on{border-color:#24ff00;color:#24ff00}
+.hm-play:focus-visible,.hm-ghost:focus-visible,.hm-dot:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.hm-dots{display:flex;gap:6px;margin-top:26px}
+.hm-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.3);border:none;padding:0;cursor:pointer;transition:width .3s,background .3s}
+.hm-dot.act{width:22px;background:#24ff00}
+
+.hm-rows{position:relative;z-index:2;padding-bottom:64px}
+.hm-row{margin-bottom:28px}
+.hm-row-hd{display:flex;align-items:baseline;gap:10px;margin-bottom:6px;padding-left:max(48px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.hm-row-ttl{font-size:clamp(17px,1.8vw,22px);font-weight:600}
+.hm-row-sub{font-size:12px;color:rgba(255,255,255,.42)}
+.hm-track-wrap{position:relative}
+.hm-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;scroll-padding-left:max(48px,env(safe-area-inset-left,0px));padding:10px max(24px,env(safe-area-inset-right,0px)) 14px max(48px,env(safe-area-inset-left,0px));scrollbar-width:none}
+.hm-track::-webkit-scrollbar{display:none}
+.hm-arrow{position:absolute;top:10px;bottom:14px;width:48px;border:none;color:#fff;cursor:pointer;z-index:3;opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center}
+.hm-arrow.l{left:0;background:linear-gradient(90deg,rgba(0,0,0,.9),transparent)}
+.hm-arrow.r{right:0;background:linear-gradient(270deg,rgba(0,0,0,.9),transparent)}
+.hm-track-wrap:hover .hm-arrow,.hm-arrow:focus-visible{opacity:1}
+.hm-card{flex:0 0 clamp(220px,22vw,340px);aspect-ratio:16/9;max-width:100%;border-radius:10px;overflow:hidden;position:relative;cursor:pointer;scroll-snap-align:start;border:3px solid transparent;transition:transform .2s,border-color .2s,box-shadow .2s;background:#111;outline:none}
+.hm-card:hover,.hm-card:focus-visible{transform:scale(1.04);border-color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.7);z-index:2}
+.hm-card.feat{border-color:rgba(255,255,255,.85)}
+.hm-card>svg{position:absolute;inset:0;width:100%;height:100%}
+.hm-card-shade{position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.82) 0%,transparent 58%)}
+.hm-card-logo{position:absolute;left:12px;bottom:14px;right:12px;font-family:var(--ff-d);font-size:clamp(18px,2vw,28px);line-height:.95;text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+.hm-badge{position:absolute;top:8px;font-size:11px;font-weight:600;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.1)}
+.hm-badge.l{left:8px}
+.hm-badge.r{right:8px}
+.hm-badge.new{color:#24ff00;border-color:rgba(36,255,0,.35)}
+.hm-ep{position:absolute;right:10px;bottom:14px;font-size:11px;font-weight:600;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums}
+.hm-prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.18)}
+.hm-prog i{display:block;height:100%;background:#24ff00}
+
+.hm-page{position:relative;z-index:1;padding-top:24px;padding-bottom:64px;padding-left:max(48px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.hm-page-ttl{font-family:var(--ff-d);font-weight:400;font-size:clamp(28px,4vw,44px);text-transform:uppercase;margin-bottom:18px}
+.hm-page-sub{font-size:17px;font-weight:600;margin:32px 0 14px}
+.hm-search{display:flex;align-items:center;gap:10px;background:#141414;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px 16px;margin-bottom:24px;max-width:640px;transition:border-color .15s}
+.hm-search:focus-within{border-color:rgba(36,255,0,.5)}
+.hm-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font-family:var(--ff-b);font-size:16px}
+.hm-search input::placeholder{color:#555}
+.hm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(240px,100%),1fr));gap:16px}
+.hm-grid .hm-card{flex:none;width:100%}
+.hm-empty{color:rgba(255,255,255,.5);font-size:15px;line-height:1.6;padding:24px 0;max-width:52ch}
+
+/* TV — same shell as home: channel cards, live badge, controls bar */
+.hm-ldot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%;background:#24ff00;margin-right:8px;animation:ldot 1.4s ease-in-out infinite}
+@keyframes ldot{0%,100%{opacity:1}50%{opacity:.3}}
+.hm-now{display:grid;gap:7px;max-width:520px;margin-bottom:14px;font-size:14px;line-height:1.4;color:rgba(255,255,255,.9)}
+.hm-now b{display:inline-block;min-width:78px;margin-right:6px;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#24ff00}
+.hm-now-bar{display:flex;align-items:center;gap:10px;font-size:12px;color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums}
+.hm-now-track{flex:1;min-width:0;height:4px;border-radius:2px;background:rgba(255,255,255,.2);overflow:hidden}
+.hm-now-track i{display:block;height:100%;background:#24ff00}
+
+.tv-bar{position:relative;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:4px max(24px,env(safe-area-inset-right,0px)) 20px max(48px,env(safe-area-inset-left,0px))}
+.tv-chips{display:flex;gap:8px;flex:1 1 380px;min-width:0;overflow-x:auto;scrollbar-width:none;padding-block:6px}
+.tv-chips::-webkit-scrollbar{display:none}
+.tv-chip{flex:none;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:999px;color:rgba(255,255,255,.82);font-family:var(--ff-b);font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;white-space:nowrap;backdrop-filter:blur(6px);transition:background .15s,color .15s,border-color .15s}
+.tv-chip:hover{background:rgba(255,255,255,.14);color:#fff}
+.tv-chip[aria-pressed="true"]{background:#24ff00;border-color:#24ff00;color:#000;font-weight:800}
+.tv-chip.add{background:transparent;border-style:dashed;border-color:rgba(36,255,0,.55);color:#24ff00}
+.tv-chip.add:hover{background:rgba(36,255,0,.1)}
+.tv-chip:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.tv-search{flex:0 1 280px;min-width:0;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:8px 14px;transition:border-color .15s}
+.tv-search:focus-within{border-color:rgba(36,255,0,.6)}
+.tv-search input{flex:1;min-width:0;background:none;border:none;outline:none;color:#fff;font-family:var(--ff-b);font-size:14px}
+.tv-search input::placeholder{color:rgba(255,255,255,.4)}
+.tv-clear{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:18px;line-height:1;padding:0 2px}
+.tv-clear:hover{color:#fff}
+.tv-gridpage{padding-top:4px}
+.tv-gridhd{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
+.hm-empty-row{padding:6px max(24px,env(safe-area-inset-right,0px)) 6px max(48px,env(safe-area-inset-left,0px))}
+
+.hm-card.is-ch{background:#0a0a0a}
+.hm-ch-glow{position:absolute;inset:0}
+.hm-ch-logo{position:absolute;inset:0 0 34px;display:flex;align-items:center;justify-content:center;padding:0 14px;text-align:center;font-family:var(--ff-d);font-size:clamp(24px,2.6vw,38px);line-height:1;text-transform:uppercase;letter-spacing:.03em;text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.hm-ch-now{position:absolute;left:12px;right:12px;bottom:12px;font-size:12px;font-weight:600;color:rgba(255,255,255,.92);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-badge.live{display:flex;align-items:center;background:#24ff00;border-color:#24ff00;color:#000;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.hm-badge.live .hm-ldot{width:6px;height:6px;margin-right:6px;background:#000}
+.hm-fav{position:absolute;top:8px;right:8px;z-index:2;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .15s,color .15s,background .15s}
+.hm-card:hover .hm-fav,.hm-card:focus-visible .hm-fav,.hm-fav.on,.hm-fav:focus-visible{opacity:1}
+.hm-fav:hover{background:rgba(0,0,0,.8)}
+.hm-fav.on{color:#24ff00;border-color:rgba(36,255,0,.5)}
+@media(hover:none){.hm-fav{opacity:1}}
+
+.ad-list{margin:18px 0 4px;border-top:1px solid rgba(255,255,255,.08)}
+.ad-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px}
+.ad-item span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ad-count{font-size:12px;color:var(--fg-muted)}
+.ad-rm{background:none;border:none;color:var(--fg-muted);cursor:pointer;font-size:20px;line-height:1;padding:0 6px;border-radius:4px}
+.ad-rm:hover{color:#fff}
+.ad-rm:focus-visible{outline:2px solid #24ff00}
+.ad-err{color:var(--warn);font-size:13px;margin:-2px 0 8px}
+
+@media(max-width:760px){
+  .hm-nav{grid-template-columns:auto 1fr auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .hm-tabs{justify-self:center}
+  .hm-tab{padding:8px 12px}
+  .hm-tab span,.hm-left .logo,.hm-clock{display:none}
+  .hm-hero,.hm-row-hd,.hm-page,.tv-bar,.hm-empty-row{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .tv-search{flex:1 1 100%}
+  .hm-track{gap:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));scroll-padding-left:max(16px,env(safe-area-inset-left,0px))}
+  .hm-card{flex-basis:70vw}
+  .hm-arrow{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .hm-bd-layer,.hm-title,.hm-ldot{animation:none}
+  .hm-card,.hm-dot{transition:none}
+}
+
+@media(max-width:420px){
+  .plans-grid{grid-template-columns:1fr}
+  .login-card{padding:32px 20px}
+  .login-hd,.prof-hd{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo, useId } = React;
+
+const GR = [
+  'linear-gradient(145deg,#1a6abf,#0d3060)',
+  'linear-gradient(145deg,#8B2FC9,#3d0f6b)',
+  'linear-gradient(145deg,#d4821a,#7a3e00)',
+  'linear-gradient(145deg,#1e8a4e,#0a4422)',
+  'linear-gradient(145deg,#c0392b,#5e0008)',
+  'linear-gradient(145deg,#0088b3,#003d52)',
+  'linear-gradient(145deg,#7d5c9f,#3a1e60)',
+];
+
+const DEF_PROFILES = [
+  { id:1, name:'Você', initial:'V', gi:0 },
+];
+
+const PLANS = [
+  { id:'basic', label:'Básico', price:'R$9,57',  period:'pagamento único',
+    feats:['10.000+ títulos','Lançamentos licenciados','Plano vitalício','Suporte 24 horas'] },
+  { id:'max',   label:'MAX',    price:'R$23,61', period:'pagamento único',
+    feats:['10.000+ títulos','Lançamentos licenciados','Canais ao vivo','Futebol ao vivo'] },
+];
+
+function PAv({ profile, editing }) {
+  return (
+    <div className={`p-av${editing?' editing':''}`}
+         style={{ background: GR[profile.gi % GR.length] }}>
+      <span className="p-av-init">{profile.initial}</span>
+      {editing && (
+        <div className="p-edit-ov">
+          <svg className="p-edit-ic" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlansModal({ onClose, onDone }) {
+  const [step,  setStep]  = useState('pick');
+  const [plan,  setPlan]  = useState(null);
+  const [name,  setName]  = useState('');
+  const [email, setEmail] = useState('');
+  const [pass,  setPass]  = useState('');
+  const stop = e => e.stopPropagation();
+
+  if (step === 'register') return (
+    <div className="modal-ov" onClick={onClose}>
+      <div className="modal-box" onClick={stop}>
+        <div className="modal-title">Criar conta</div>
+        <div className="modal-sub">
+          Plano <strong style={{color:'#24ff00'}}>
+            {plan==='basic'?'Básico · R$9,57':'MAX · R$23,61'}
+          </strong> selecionado
+        </div>
+        <input className="s-inp" placeholder="Seu nome"  value={name}  onChange={e=>setName(e.target.value)} />
+        <input className="s-inp" type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+        <input className="s-inp" type="password" placeholder="Crie uma senha" value={pass} onChange={e=>setPass(e.target.value)} />
+        <button className="btn-red" style={{marginTop:8}} onClick={()=>onDone({name,email,plan})}>
+          Finalizar assinatura
+        </button>
+        <button className="btn-ghost" onClick={()=>setStep('pick')}>← Voltar aos planos</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="modal-ov" onClick={onClose}>
+      <div className="modal-box" onClick={stop}>
+        <div className="modal-title">Escolha seu plano</div>
+        <div className="modal-sub">Acesso vitalício — pague uma vez, assista para sempre.</div>
+        <div className="plans-grid">
+          {PLANS.map(p => (
+            <div key={p.id} className={`plan-card${plan===p.id?' sel':''}`} onClick={()=>setPlan(p.id)}>
+              <div className="plan-lbl">{p.label}</div>
+              <div className="plan-price">{p.price}</div>
+              <div className="plan-per">{p.period}</div>
+              {p.feats.map((f,i)=>(
+                <div key={i} className="plan-feat">
+                  <span className="plan-ck">✓</span><span>{f}</span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <button className="btn-red" style={{marginTop:0}} disabled={!plan}
+                onClick={()=>plan&&setStep('register')}>
+          Continuar
+        </button>
+        <button className="btn-ghost" onClick={onClose}>Cancelar</button>
+      </div>
+    </div>
+  );
+}
+
+function LoginView({ onLogin, onShowPlans }) {
+  const [email, setEmail] = useState('');
+  const [pass,  setPass]  = useState('');
+  const [error, setError] = useState('');
+  const [busy,  setBusy]  = useState(false);
+
+  const submit = e => {
+    e.preventDefault();
+    if (!email.trim() || !pass) { setError('Preencha seu email e senha para continuar.'); return; }
+    setBusy(true); setError('');
+    setTimeout(()=>{ setBusy(false); onLogin(); }, 900);
+  };
+
+  return (
+    <div className="login-bg">
+      <header className="login-hd"><span className="logo"><span className="logo-w">WATCH</span><span className="logo-f">FIRST</span></span></header>
+      <main className="login-main">
+        <div className="login-card">
+          <h1 className="login-title">Entrar</h1>
+          <form onSubmit={submit} noValidate>
+            <div className="fl-g">
+              <input id="wf-e" className="fl-i" type="email" placeholder=" "
+                value={email} onChange={e=>{setEmail(e.target.value);setError('');}}
+                autoComplete="email" />
+              <label className="fl-l" htmlFor="wf-e">Email</label>
+            </div>
+            <div className="fl-g">
+              <input id="wf-p" className="fl-i" type="password" placeholder=" "
+                value={pass} onChange={e=>{setPass(e.target.value);setError('');}}
+                autoComplete="current-password" />
+              <label className="fl-l" htmlFor="wf-p">Senha</label>
+            </div>
+            {error && <div className="err-bar">{error}</div>}
+            <button className="btn-red" type="submit" disabled={busy}>
+              {busy ? 'Entrando…' : 'Entrar'}
+            </button>
+          </form>
+          <div className="login-meta">
+            <label className="chk-lbl">
+              <input type="checkbox" defaultChecked />Lembrar de mim
+            </label>
+            <button className="txt-lnk">Precisa de ajuda?</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function ProfilesView({ onSelect }) {
+  const [managing, setManaging] = useState(false);
+  const [adding,   setAdding]   = useState(false);
+  const [newName,  setNewName]  = useState('');
+  const newRef = useRef(null);
+
+  const [profiles, setProfiles] = useState(()=>{
+    try { const s=localStorage.getItem('wf_profiles'); return s?JSON.parse(s):DEF_PROFILES; }
+    catch { return DEF_PROFILES; }
+  });
+
+  const save = p => {
+    setProfiles(p);
+    try { localStorage.setItem('wf_profiles', JSON.stringify(p)); } catch {}
+  };
+
+  const startAdd = () => { setAdding(true); setNewName(''); setTimeout(()=>newRef.current?.focus(),50); };
+
+  const confirmAdd = () => {
+    const n = newName.trim();
+    if (!n) { setAdding(false); return; }
+    save([...profiles, { id:Date.now(), name:n, initial:n[0].toUpperCase(), gi:profiles.length%GR.length }]);
+    setAdding(false); setNewName('');
+  };
+
+  const remove = id => { if (profiles.length > 1) save(profiles.filter(p=>p.id!==id)); };
+
+  return (
+    <div className="prof-screen">
+      <header className="prof-hd">
+        <span className="logo"><span className="logo-w">WATCH</span><span className="logo-f">FIRST</span></span>
+        <button className="txt-lnk" onClick={()=>{try{localStorage.removeItem('wf_profiles')}catch{}window.location.reload()}}>
+          Sair
+        </button>
+      </header>
+      <main className="prof-main">
+        <h1 className="prof-heading">Quem está assistindo?</h1>
+        <div className="prof-grid">
+          {profiles.map(p=>(
+            <div key={p.id} className="p-item" tabIndex={0} role="button"
+                 onClick={()=>!managing&&onSelect(p)}
+                 onKeyDown={e=>e.key==='Enter'&&!managing&&onSelect(p)}>
+              <PAv profile={p} editing={managing} />
+              <span className="p-name">{p.name}</span>
+              {managing && profiles.length > 1 && (
+                <button className="p-rm" onClick={e=>{e.stopPropagation();remove(p.id);}}>
+                  Remover
+                </button>
+              )}
+            </div>
+          ))}
+
+          {profiles.length < 5 && managing && (
+            <div className="p-item" onClick={!adding ? startAdd : undefined}>
+              {adding ? (
+                <div className="p-add-form" onClick={e=>e.stopPropagation()}>
+                  <input ref={newRef} className="p-add-inp" placeholder="Nome"
+                    value={newName} onChange={e=>setNewName(e.target.value)}
+                    onKeyDown={e=>{if(e.key==='Enter')confirmAdd();if(e.key==='Escape')setAdding(false);}} />
+                  <button className="p-add-ok" onClick={confirmAdd}>Adicionar</button>
+                </div>
+              ) : (
+                <div className="p-add-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2"
+                       style={{width:'clamp(24px,4vw,40px)',height:'clamp(24px,4vw,40px)'}}>
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                </div>
+              )}
+              {!adding && <span className="p-name">Adicionar perfil</span>}
+            </div>
+          )}
+        </div>
+        <button className="btn-mng" onClick={()=>{setManaging(m=>!m);setAdding(false);}}>
+          {managing ? 'Concluído' : 'Gerenciar perfis'}
+        </button>
+      </main>
+    </div>
+  );
+}
+
+const DEF_ADDONS = [
+  { id:'futebol1', name:'FUTEBOL 1' },
+  { id:'tv',       name:'TV'        },
+  { id:'tvplay',   name:'TV PLAY'   },
+  { id:'minhatv',  name:'minha tv'  },
+  { id:'bestcine', name:'bestcine'  },
+];
+
+const CHANNELS = [
+  {id:1,  name:'ARENA 1',     cat:'Esportes', addon:'futebol1', live:true,  now:'Rodada 32 · Alvorada x Litoral', next:'Mesa Redonda',          dur:120, pct:.58, scene:'pitch', pal:['#010a05','#0b4020','#b8ffcc'], bg:'#031503', color:'#24ff00',
+   desc:'A principal transmissão do futebol nacional, com narração, comentários e participação do torcedor ao vivo.'},
+  {id:2,  name:'ARENA 2',     cat:'Esportes', addon:'futebol1', live:false, now:'Reprise · Final do Estadual',    next:'Gols da Rodada',        dur:110, pct:.30, scene:'pitch', pal:['#020a08','#0a3a2c','#a8ffe6'], bg:'#031503', color:'#24ff00',
+   desc:'Jogos simultâneos, reprises e os melhores momentos da rodada.'},
+  {id:3,  name:'ARENA 3',     cat:'Esportes', addon:'futebol1', live:false, now:'Bastidores do Clássico',         next:'Reprise · Rodada 31',   dur:60,  pct:.45, scene:'pitch', pal:['#05080a','#12382c','#c8ffd8'], bg:'#031503', color:'#24ff00',
+   desc:'Bastidores, entrevistas e análises táticas dos grandes clubes.'},
+  {id:4,  name:'ARENA 4',     cat:'Esportes', addon:'futebol1', live:false, now:'Gols da Rodada',                 next:'Mesa Redonda',          dur:45,  pct:.70, scene:'pitch', pal:['#030806','#0a3020','#d2ffb8'], bg:'#031503', color:'#24ff00',
+   desc:'Gols, lances e polêmicas da rodada em um só lugar.'},
+  {id:5,  name:'PLACAR',      cat:'Esportes', addon:'futebol1', live:true,  now:'Basquete · Falcões x Tubarões',  next:'Melhores Momentos',     dur:150, pct:.35, scene:'pitch', pal:['#02040f','#0a1f4d','#8fb8ff'], bg:'#00073d', color:'#ffffff',
+   desc:'Basquete, vôlei e esportes de quadra, com transmissão ao vivo e estatísticas em tempo real.'},
+  {id:6,  name:'PLACAR 2',    cat:'Esportes', addon:'futebol1', live:false, now:'Vôlei · Semifinal (reprise)',    next:'Tênis · Final Aberta',  dur:120, pct:.62, scene:'pitch', pal:['#03050f','#10285a','#a9c8ff'], bg:'#00073d', color:'#ffffff',
+   desc:'Competições olímpicas, tênis e esportes individuais, com narração especializada.'},
+  {id:7,  name:'ESPORTE+',    cat:'Esportes', addon:'futebol1', live:true,  now:'Automobilismo · Treino Livre 2', next:'Classificação',         dur:90,  pct:.50, scene:'city',  pal:['#0b0502','#3a1a08','#ffb347'], bg:'#140a02', color:'#ffb347',
+   desc:'Automobilismo e esportes radicais, dos treinos livres à bandeirada final.'},
+  {id:8,  name:'LANCE TV',    cat:'Esportes', addon:'futebol1', live:false, now:'Resenha ao Vivo',                next:'Jogo Aberto',           dur:60,  pct:.25, scene:'city',  pal:['#06030f','#241048','#b79cff'], bg:'#0e0033', color:'#b79cff',
+   desc:'Mesas-redondas e resenhas ao vivo sobre tudo o que acontece no esporte.'},
+  {id:9,  name:'TELA 1',      cat:'Filmes e séries', addon:'tvplay',   live:false, now:'Cinema · Órbita',               next:'Linha de Fogo · T1 E5',  dur:140, pct:.38, scene:'space',  pal:['#02020a','#120b35','#7d6bff'], bg:'#0a0a14', color:'#ffffff',
+   desc:'Lançamentos do cinema e sessões especiais, com poucos intervalos.'},
+  {id:10, name:'TELA 2',      cat:'Filmes e séries', addon:'tvplay',   live:false, now:'Cinema · Sol de Ferro',         next:'Noite de Gala',          dur:128, pct:.72, scene:'dunes',  pal:['#1a0d05','#7a3c12','#ffb347'], bg:'#140a03', color:'#ffb347',
+   desc:'Faroestes, aventuras e dramas épicos em sessões contínuas.'},
+  {id:11, name:'CINE NOITE',  cat:'Filmes e séries', addon:'tvplay',   live:false, now:'Maratona Suspense · Eco',       next:'Maré Alta · T2 E1',      dur:100, pct:.20, scene:'forest', pal:['#000000','#0a140a','#3b6b3b'], bg:'#000d05', color:'#9fe39f',
+   desc:'Suspense e terror para a madrugada, com maratonas de fim de semana.'},
+  {id:12, name:'CLÁSSICOS',   cat:'Filmes e séries', addon:'tvplay',   live:false, now:'Clássicos do Faroeste',         next:'Sessão Comentada',       dur:115, pct:.55, scene:'dunes',  pal:['#120a04','#5a3a1a','#ffcf8a'], bg:'#1a0f00', color:'#ffcf8a',
+   desc:'Clássicos restaurados do cinema, em sessões comentadas.'},
+  {id:13, name:'AÇÃO HD',     cat:'Filmes e séries', addon:'bestcine', live:false, now:'Maratona Poeira · T1 E3',       next:'Vento Norte',            dur:55,  pct:.40, scene:'city',   pal:['#04080d','#1d3a52','#4fb3ff'], bg:'#000d1a', color:'#4fb3ff',
+   desc:'Perseguições, explosões e muita adrenalina em alta definição.'},
+  {id:14, name:'SUSPENSE 24', cat:'Filmes e séries', addon:'bestcine', live:false, now:'Linha de Fogo · T1 E2',         next:'Cidade Cinza · T3 E1',   dur:52,  pct:.66, scene:'city',   pal:['#050505','#2a2f33','#9fb4c4'], bg:'#0d0d14', color:'#c9c9ff',
+   desc:'Séries policiais e de mistério, 24 horas por dia.'},
+  {id:15, name:'DOC 24',      cat:'Filmes e séries', addon:'bestcine', live:false, now:'Raízes · Episódio 3',           next:'Raízes · Episódio 4',    dur:50,  pct:.15, scene:'forest', pal:['#020805','#0d2e1a','#24ff00'], bg:'#001a1a', color:'#7fffd4',
+   desc:'Documentários sobre natureza, ciência e história.'},
+  {id:16, name:'PLANETA',     cat:'Filmes e séries', addon:'bestcine', live:false, now:'Oceanos Profundos',             next:'Expedição Ártico',       dur:55,  pct:.48, scene:'sea',    pal:['#03101c','#1b5a7a','#ffe3b0'], bg:'#1a1400', color:'#ffcc00',
+   desc:'Viagens, vida selvagem e expedições pelos cantos mais remotos do mundo.'},
+  {id:17, name:'AGORA 24',    cat:'Notícias', addon:'tv',      live:true,  now:'Jornal da Noite',                next:'Debate Aberto',         dur:45,  pct:.60, scene:'city',  pal:['#02040f','#0e2a5c','#7fb2ff'], bg:'#00001a', color:'#7fb2ff',
+   desc:'Notícias 24 horas, com plantão de última hora e análise dos fatos.'},
+  {id:18, name:'RADAR NEWS',  cat:'Notícias', addon:'tv',      live:true,  now:'Edição Extra · Economia',        next:'Mundo em 30 Minutos',   dur:30,  pct:.33, scene:'city',  pal:['#030a0a','#0e3a3a','#7fe0d0'], bg:'#0a1414', color:'#7fe0d0',
+   desc:'Economia, política e mundo, com especialistas ao vivo no estúdio.'},
+  {id:19, name:'MANCHETE',    cat:'Notícias', addon:'minhatv', live:false, now:'Manchete 360',                   next:'Giro Esportivo',        dur:30,  pct:.80, scene:'city',  pal:['#030a05','#0e3a1a','#7dff9a'], bg:'#001500', color:'#7dff9a',
+   desc:'As manchetes do dia, em edições curtas a cada meia hora.'},
+  {id:20, name:'ESTILO',      cat:'Variedades', addon:'minhatv', live:false, now:'Receitas da Semana',           next:'Casa em Foco',          dur:40,  pct:.50, scene:'dunes', pal:['#10030a','#4a1230','#ff9ad0'], bg:'#1a0010', color:'#ff9ad0',
+   desc:'Culinária, decoração e comportamento, com receitas e dicas para o dia a dia.'},
+  {id:21, name:'MÚSICA+',     cat:'Variedades', addon:'minhatv', live:false, now:'Top 20 do Mês',                next:'Show Acústico',         dur:60,  pct:.28, scene:'space', pal:['#08020f','#2a0f4a','#e08cff'], bg:'#10001a', color:'#e08cff',
+   desc:'Clipes, shows e entrevistas com artistas de todos os estilos.'},
+  {id:22, name:'FAMÍLIA TV',  cat:'Variedades', addon:'minhatv', live:false, now:'Desenhos em Maratona',         next:'Cine Pipoca',           dur:60,  pct:.44, scene:'sea',   pal:['#02120c','#0e5a45','#aaffdd'], bg:'#001a14', color:'#33ff99',
+   desc:'Programação infantil e para toda a família.'},
+];
+const nCh = k => `${k} ${k===1?'canal':'canais'}`;
+const fmtTime = ms => new Date(ms).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+const TITLES = [
+  {id:101, title:'Linha de Fogo', kind:'Série', genres:['Policial','Drama'], year:2026, dur:'8 episódios', score:'8.6', age:'16', scene:'city', pal:['#03060d','#16314f','#f0a23a'], original:true,
+   desc:'Uma investigadora da divisão de crimes graves reabre o caso que destruiu sua carreira. Cada nova pista leva a alguém que ela jurou proteger.',
+   cw:{left:'5 eps restantes', badge:'Novo episódio', ep:'T1 • E4', pct:.42}},
+  {id:102, title:'Maré Alta', kind:'Série', genres:['Suspense','Mistério'], year:2025, dur:'2 temporadas', score:'8.1', age:'14', scene:'sea', pal:['#020b12','#0b3a4a','#ffd38a'],
+   desc:'Numa vila de pescadores isolada pela tempestade, um corpo aparece na praia. Todos os moradores têm algo a esconder.',
+   cw:{left:'1 ep restante', ep:'T2 • E9', pct:.88}},
+  {id:103, title:'Sol de Ferro', kind:'Filme', genres:['Faroeste','Ação'], year:2026, dur:'2h 08m', score:'7.9', age:'16', scene:'dunes', pal:['#1a0d05','#7a3c12','#ffb347'],
+   desc:'Um vaqueiro aposentado atravessa o sertão para resgatar o filho, levado por uma milícia que controla a única fonte de água da região.',
+   cw:{left:'1h 12m restantes', pct:.45}},
+  {id:104, title:'Órbita', kind:'Filme', genres:['Ficção científica','Drama'], year:2025, dur:'2h 21m', score:'8.4', age:'12', scene:'space', pal:['#02020a','#120b35','#7d6bff'],
+   desc:'A última tripulação de uma estação espacial recebe um sinal vindo da Terra, que deveria estar em silêncio há dez anos.',
+   cw:{left:'38m restantes', pct:.73}},
+  {id:105, title:'Raízes', kind:'Série', genres:['Documentário','Natureza'], year:2026, dur:'6 episódios', score:'9.0', age:'L', scene:'forest', pal:['#020805','#0d2e1a','#24ff00'], original:true,
+   desc:'Um ano dentro da maior floresta do planeta, acompanhando as espécies que dependem umas das outras para sobreviver.'},
+  {id:106, title:'Cidade Cinza', kind:'Série', genres:['Crime','Thriller'], year:2024, dur:'3 temporadas', score:'8.3', age:'18', scene:'city', pal:['#050505','#2a2f33','#9fb4c4'],
+   desc:'Dois irmãos dividem o controle do porto mais movimentado do país, até que um deles decide colaborar com a polícia.'},
+  {id:107, title:'Vento Norte', kind:'Filme', genres:['Aventura'], year:2026, dur:'1h 54m', score:'7.6', age:'10', scene:'forest', pal:['#04080d','#1d3a52','#bfe6ff'],
+   desc:'Uma equipe de resgate enfrenta a pior nevasca em um século para alcançar uma cientista presa no alto da montanha.'},
+  {id:108, title:'Eco', kind:'Filme', genres:['Terror'], year:2025, dur:'1h 39m', score:'7.2', age:'18', scene:'forest', pal:['#000000','#0a140a','#3b6b3b'],
+   desc:'Um grupo de amigos aluga uma casa no meio da mata. Na primeira noite, a floresta começa a repetir as vozes deles.'},
+  {id:109, title:'Noite de Gala', kind:'Filme', genres:['Comédia'], year:2026, dur:'1h 47m', score:'7.4', age:'12', scene:'city', pal:['#0b0703','#3a2508','#ffd56b'],
+   desc:'Um garçom é confundido com um bilionário na festa mais exclusiva do ano e precisa sustentar a mentira até o amanhecer.'},
+  {id:110, title:'Horizonte Azul', kind:'Série', genres:['Drama','Romance'], year:2025, dur:'10 episódios', score:'7.8', age:'14', scene:'sea', pal:['#03101c','#1b5a7a','#ffe3b0'],
+   desc:'Uma arquiteta volta à cidade litorânea onde cresceu para vender a casa da família e reencontra tudo o que deixou para trás.'},
+  {id:111, title:'Poeira', kind:'Série', genres:['Ação','Drama'], year:2026, dur:'8 episódios', score:'8.0', age:'16', scene:'dunes', pal:['#120a04','#5a3a1a','#ffcf8a'], original:true,
+   desc:'Caminhoneiros de uma rota esquecida do interior viram alvo quando transportam, sem saber, uma carga que vale milhões.'},
+  {id:112, title:'Gravidade Zero', kind:'Série', genres:['Ficção científica'], year:2026, dur:'1 temporada', score:'8.2', age:'12', scene:'space', pal:['#01030a','#0a2440','#5fd0ff'],
+   desc:'Cinco estudantes vencem um concurso para viver um mês em órbita. No terceiro dia, a comunicação com a base é cortada.'},
+];
+const TMAP = Object.fromEntries(TITLES.map(t=>[t.id,t]));
+const HERO_IDS = [101,104,105,102,111,103];
+const HOME_ROWS = [
+  { title:'Continuar assistindo', cw:true, ids:TITLES.filter(t=>t.cw).map(t=>t.id) },
+  { title:'Em alta na WATCHFIRST', ids:[101,106,112,111,104,110,102] },
+  { title:'Lançamentos', ids:[103,107,109,108,105,112] },
+  { title:'Originais WATCHFIRST', ids:TITLES.filter(t=>t.original).map(t=>t.id) },
+  { title:'Filmes', ids:TITLES.filter(t=>t.kind==='Filme').map(t=>t.id) },
+  { title:'Séries', ids:TITLES.filter(t=>t.kind==='Série').map(t=>t.id) },
+];
+
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+
+function rng(seed){
+  return ()=>{ seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+
+function Scene({ t }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g,'');
+  const [a,b,c] = t.pal;
+  const art = useMemo(()=>{
+    const r = rng(t.id*7919), els = [];
+    if (t.scene==='city') {
+      for (let x=-20, i=0; x<1640; i++) {
+        const w=50+r()*90, h=160+r()*440;
+        els.push(<rect key={i} x={x} y={900-h} width={w} height={h} fill={`url(#w${uid})`}/>);
+        x+=w+3+r()*8;
+      }
+    } else if (t.scene==='sea') {
+      els.push(<circle key="sun" cx="1150" cy="470" r="130" fill={c} opacity=".9"/>);
+      els.push(<rect key="water" x="0" y="520" width="1600" height="380" fill={b}/>);
+      for (let i=0;i<8;i++){ const y=545+i*46, k=10+i*3;
+        els.push(<path key={i} d={`M0 ${y} Q 200 ${y-k} 400 ${y} T 800 ${y} T 1200 ${y} T 1600 ${y}`} stroke={c} strokeOpacity={.35-i*.03} strokeWidth="3" fill="none"/>); }
+      els.push(<rect key="dim" x="0" y="520" width="1600" height="380" fill="#000" opacity=".35"/>);
+    } else if (t.scene==='dunes') {
+      els.push(<circle key="sun" cx="1120" cy="400" r="170" fill={c} opacity=".92"/>);
+      [[560,.35],[660,.6],[780,.88]].forEach(([y,o],i)=>{
+        els.push(<path key={i} d={`M0 ${y} Q ${300+r()*300} ${y-90-r()*90} 800 ${y-20} T 1600 ${y-r()*60} V900 H0Z`} fill="#000" opacity={o}/>);
+      });
+    } else if (t.scene==='space') {
+      for (let i=0;i<140;i++) els.push(<circle key={'s'+i} cx={r()*1600} cy={r()*900} r={r()*1.8+.3} fill="#fff" opacity={r()*.8+.2}/>);
+      els.push(<circle key="planet" cx="1120" cy="430" r="250" fill={`url(#p${uid})`}/>);
+      els.push(<ellipse key="ring" cx="1120" cy="430" rx="420" ry="70" fill="none" stroke={c} strokeOpacity=".55" strokeWidth="6" transform="rotate(-14 1120 430)"/>);
+    } else if (t.scene==='pitch') {
+      [[170,70],[540,40],[1060,40],[1430,70]].forEach(([x,y],i)=>{
+        els.push(<circle key={'lg'+i} cx={x} cy={y} r="300" fill={`url(#l${uid})`}/>);
+        for (let k=0;k<6;k++) els.push(<circle key={'lp'+i+k} cx={x-24+(k%3)*24} cy={y-6+Math.floor(k/3)*14} r="4.5" fill="#fff"/>);
+      });
+      els.push(<rect key="stand" x="0" y="430" width="1600" height="120" fill="#000" opacity=".55"/>);
+      for (let i=0;i<260;i++) els.push(<circle key={'cr'+i} cx={r()*1600} cy={440+r()*100} r={1.2+r()*2.4} fill={c} opacity={.1+r()*.35}/>);
+      els.push(<rect key="turf" x="0" y="540" width="1600" height="360" fill={b}/>);
+      [[540,56],[596,70],[666,86],[752,104],[856,44]].forEach(([y,h],i)=>
+        els.push(<rect key={'st'+i} x="0" y={y} width="1600" height={h} fill={i%2?'#fff':'#000'} opacity={i%2?.05:.22}/>));
+      els.push(<polygon key="ln" points="430,566 1170,566 1480,880 120,880" fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="4"/>);
+      els.push(<line key="mid" x1="800" y1="566" x2="800" y2="880" stroke="#fff" strokeOpacity=".55" strokeWidth="4"/>);
+      els.push(<ellipse key="cc" cx="800" cy="722" rx="190" ry="58" fill="none" stroke="#fff" strokeOpacity=".55" strokeWidth="4"/>);
+    } else {
+      const pts = [];
+      for (let x=0;x<=1600;x+=160) pts.push(`${x},${380+r()*230}`);
+      els.push(<polygon key="mt" points={`0,900 ${pts.join(' ')} 1600,900`} fill={b} opacity=".9"/>);
+      [[680,.45,.8],[780,.7,1],[900,.95,1.25]].forEach(([base,o,s],row)=>{
+        for (let i=0;i<36;i++){ const x=i*46+r()*30, h=(110+r()*130)*s;
+          els.push(<polygon key={row+'-'+i} points={`${x},${base-h} ${x-h*.27},${base} ${x+h*.27},${base}`} fill="#000" opacity={o}/>); }
+        els.push(<rect key={'g'+row} x="0" y={base-2} width="1600" height={900-base+2} fill="#000" opacity={o}/>);
+      });
+    }
+    return els;
+  },[t.id,uid]);
+  return (
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id={`k${uid}`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={a}/><stop offset="1" stopColor={b}/></linearGradient>
+        <radialGradient id={`g${uid}`} cx=".72" cy=".42" r=".6"><stop offset="0" stopColor={c} stopOpacity=".55"/><stop offset="1" stopColor={c} stopOpacity="0"/></radialGradient>
+        <radialGradient id={`p${uid}`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor={c}/><stop offset=".6" stopColor={b}/><stop offset="1" stopColor={a}/></radialGradient>
+        <radialGradient id={`l${uid}`} cx=".5" cy=".5" r=".5"><stop offset="0" stopColor={c} stopOpacity=".5"/><stop offset="1" stopColor={c} stopOpacity="0"/></radialGradient>
+        <pattern id={`w${uid}`} width="22" height="26" patternUnits="userSpaceOnUse">
+          <rect width="22" height="26" fill="#05070a"/>
+          <rect x="5" y="6" width="5" height="8" fill={c} opacity=".7"/>
+          <rect x="13" y="6" width="5" height="8" fill={c} opacity=".18"/>
+        </pattern>
+      </defs>
+      <rect width="1600" height="900" fill={`url(#k${uid})`}/>
+      <rect width="1600" height="900" fill={`url(#g${uid})`}/>
+      {art}
+    </svg>
+  );
+}
+
+function TitleCard({ t, cw, featured, onFocus, onOpen }) {
+  const hasEp = cw && t.cw?.ep;
+  return (
+    <div className={`hm-card${featured?' feat':''}`} tabIndex={0} role="button" aria-label={t.title}
+         onMouseEnter={()=>onFocus(t.id)} onFocus={()=>onFocus(t.id)}
+         onClick={()=>onOpen(t.id)} onKeyDown={e=>e.key==='Enter'&&onOpen(t.id)}>
+      <Scene t={t}/>
+      <div className="hm-card-shade"/>
+      {cw && t.cw?.left && <span className="hm-badge l">{t.cw.left}</span>}
+      {cw && t.cw?.badge && <span className="hm-badge r new">{t.cw.badge}</span>}
+      {!cw && t.original && <span className="hm-badge l new">Original</span>}
+      <div className="hm-card-logo" style={{right:hasEp?70:12}}>{t.title}</div>
+      {hasEp && <span className="hm-ep">{t.cw.ep}</span>}
+      {cw && t.cw && <div className="hm-prog"><i style={{width:`${t.cw.pct*100}%`}}/></div>}
+    </div>
+  );
+}
+
+function ChannelCard({ c, featured, fav, onFocus, onOpen, onFav }) {
+  return (
+    <div className={`hm-card is-ch${featured?' feat':''}`} tabIndex={0} role="button"
+         aria-label={`${c.name}, ${c.live?'ao vivo, ':''}${c.now}`}
+         onMouseEnter={()=>onFocus(c.id)} onFocus={()=>onFocus(c.id)}
+         onClick={()=>onOpen(c.id)} onKeyDown={e=>e.key==='Enter'&&onOpen(c.id)}>
+      <div className="hm-ch-glow" style={{background:`radial-gradient(ellipse at 50% 40%, ${c.color}40, transparent 68%)`}}/>
+      <div className="hm-ch-logo" style={{color:c.color}}>{c.name}</div>
+      <div className="hm-card-shade"/>
+      {c.live
+        ? <span className="hm-badge l live"><i className="hm-ldot"/>Ao vivo</span>
+        : <span className="hm-badge l">No ar</span>}
+      <button type="button" className={`hm-fav${fav?' on':''}`} tabIndex={-1} aria-pressed={fav}
+              aria-label={fav?`Remover ${c.name} dos favoritos`:`Favoritar ${c.name}`}
+              onClick={e=>{e.stopPropagation();onFav(c.id);}}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={fav?'currentColor':'none'} stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </button>
+      <div className="hm-ch-now">{c.now}</div>
+      <div className="hm-prog"><i style={{width:`${c.pct*100}%`}}/></div>
+    </div>
+  );
+}
+
+function Row({ title, sub, children }) {
+  const ref = useRef(null);
+  const go = dir => ref.current?.scrollBy({ left: dir*ref.current.clientWidth*.8, behavior:'smooth' });
+  const chev = d => <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points={d}/></svg>;
+  return (
+    <section className="hm-row">
+      <div className="hm-row-hd">
+        <h2 className="hm-row-ttl">{title}</h2>
+        <span className="hm-row-sub">{sub}</span>
+      </div>
+      <div className="hm-track-wrap">
+        <button className="hm-arrow l" onClick={()=>go(-1)} aria-label="Voltar">{chev('15 18 9 12 15 6')}</button>
+        <div className="hm-track" ref={ref}>
+          {children}
+        </div>
+        <button className="hm-arrow r" onClick={()=>go(1)} aria-label="Avançar">{chev('9 18 15 12 9 6')}</button>
+      </div>
+    </section>
+  );
+}
+
+function TvHome() {
+  const t0 = useRef(Date.now());
+  const [addons, setAddons] = useState(()=>{ try { const s=localStorage.getItem('wf_addons'); return s?JSON.parse(s):DEF_ADDONS; } catch { return DEF_ADDONS; } });
+  const [favs, setFavs]     = useState(()=>{ try { return JSON.parse(localStorage.getItem('wf_tv_favs')||'[]'); } catch { return []; } });
+  const [filter, setFilter] = useState('all');
+  const [q, setQ]           = useState('');
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [featId, setFeatId] = useState(null);
+  const [paused, setPaused] = useState(false);
+  const [showAddon, setShowAddon] = useState(false);
+  const [adName, setAdName] = useState('');
+  const [adErr, setAdErr]   = useState('');
+
+  const visible = useMemo(()=>CHANNELS.filter(c=>addons.some(a=>a.id===c.addon)),[addons]);
+  const pool    = useMemo(()=>visible.filter(c=>c.live),[visible]);
+  const poolKey = pool.map(c=>c.id).join();
+
+  useEffect(()=>{ if (pool.length) setFeatId(pool[heroIdx%pool.length].id); },[heroIdx,poolKey]);
+  useEffect(()=>{
+    if (paused || pool.length<2) return;
+    const i=setInterval(()=>setHeroIdx(x=>(x+1)%pool.length),8000);
+    return ()=>clearInterval(i);
+  },[paused,pool.length]);
+  useEffect(()=>{
+    if (!showAddon) return;
+    const k = e => { if (e.key==='Escape') setShowAddon(false); };
+    window.addEventListener('keydown',k);
+    return ()=>window.removeEventListener('keydown',k);
+  },[showAddon]);
+
+  const saveAddons = a => { setAddons(a); try { localStorage.setItem('wf_addons', JSON.stringify(a)); } catch {} };
+  const toggleFav = id => {
+    const next = favs.includes(id) ? favs.filter(x=>x!==id) : [...favs,id];
+    setFavs(next);
+    try { localStorage.setItem('wf_tv_favs', JSON.stringify(next)); } catch {}
+  };
+  const addAddon = () => {
+    const name = adName.trim();
+    if (!name) { setAdErr('Digite o nome do addon.'); return; }
+    if (addons.some(a=>norm(a.name)===norm(name))) { setAdErr('Já existe um addon com esse nome.'); return; }
+    const id = norm(name).replace(/ +/g,'-')+'-'+Date.now();
+    saveAddons([...addons,{id,name}]);
+    setAdName(''); setAdErr(''); setShowAddon(false); setFilter(id);
+  };
+  const removeAddon = id => { saveAddons(addons.filter(a=>a.id!==id)); if (filter===id) setFilter('all'); };
+  const focus = id => { setFeatId(id); setPaused(true); };
+  const open  = id => { setFeatId(id); setPaused(true); window.scrollTo({top:0,behavior:'smooth'}); };
+
+  const feat = visible.find(c=>c.id===featId) || pool[heroIdx%pool.length] || visible[0] || null;
+  const isFav = !!feat && favs.includes(feat.id);
+  const addonName = feat ? (addons.find(a=>a.id===feat.addon)?.name||'') : '';
+  const span = feat ? [fmtTime(t0.current-feat.pct*feat.dur*60000), fmtTime(t0.current+(1-feat.pct)*feat.dur*60000)] : null;
+
+  const qs = q.trim();
+  const nq = norm(qs);
+  const match = c => !nq || norm(`${c.name} ${c.now} ${c.cat}`).includes(nq);
+  const favCh = visible.filter(c=>favs.includes(c.id));
+  const liveCh = visible.filter(c=>c.live);
+  const byAddon = id => visible.filter(c=>c.addon===id);
+  const card = c => <ChannelCard key={c.id} c={c} featured={!!feat&&feat.id===c.id} fav={favs.includes(c.id)} onFocus={focus} onOpen={open} onFav={toggleFav}/>;
+
+  const gridMode = filter!=='all' || !!nq;
+  let items = [], label = '', empty = '';
+  if (gridMode) {
+    if (filter==='fav') {
+      items = favCh.filter(match); label = 'Favoritos';
+      empty = nq ? `Nenhum favorito encontrado para “${qs}”.` : 'Você ainda não favoritou nenhum canal. Use a estrela de um canal para salvá-lo aqui.';
+    } else if (filter!=='all') {
+      items = byAddon(filter).filter(match); label = addons.find(a=>a.id===filter)?.name||'';
+      empty = nq ? `Nenhum canal encontrado para “${qs}”.` : 'Este addon ainda não tem canais. Quando ele fornecer a lista, os canais aparecem aqui.';
+    } else {
+      items = visible.filter(match); label = `Resultados para “${qs}”`;
+      empty = `Nenhum canal encontrado para “${qs}”.`;
+    }
+  }
+
+  return (
+    <>
+      <div className="hm-bd">
+        {feat && <div className="hm-bd-layer" key={'c'+feat.id}><Scene t={feat}/></div>}
+        <div className="hm-shade"/>
+      </div>
+
+      <header className="hm-hero">
+        {feat ? <>
+          <div className="hm-eyebrow">{feat.live && <i className="hm-ldot"/>}{feat.live ? 'Ao vivo agora' : 'No ar agora'}</div>
+          <h1 className="hm-title" key={'t'+feat.id}>{feat.name}</h1>
+          <div className="hm-meta">
+            <span>{feat.cat}</span><i className="hm-sep"/><span>{addonName}</span><i className="hm-sep"/><span className="hm-age">HD</span>
+          </div>
+          <div className="hm-now">
+            <div><b>Agora</b>{feat.now}</div>
+            <div className="hm-now-bar"><span>{span[0]}</span><span className="hm-now-track"><i style={{width:`${feat.pct*100}%`}}/></span><span>{span[1]}</span></div>
+            <div><b>A seguir</b>{feat.next}</div>
+          </div>
+          <p className="hm-desc">{feat.desc}</p>
+          <div className="hm-btns">
+            <button className="hm-play">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              {feat.live ? 'Assistir ao vivo' : 'Assistir'}
+            </button>
+            <button className={`hm-ghost${isFav?' on':''}`} aria-pressed={isFav} onClick={()=>toggleFav(feat.id)}>
+              {isFav ? '★ Nos favoritos' : '☆ Favoritar'}
+            </button>
+          </div>
+          {pool.length>1 && (
+            <div className="hm-dots">
+              {pool.map((c,i)=>(
+                <button key={c.id} className={`hm-dot${feat.id===c.id?' act':''}`} aria-label={c.name}
+                        onClick={()=>{ setHeroIdx(i); setFeatId(c.id); }}/>
+              ))}
+            </div>
+          )}
+        </> : <>
+          <h1 className="hm-title">Sem canais</h1>
+          <p className="hm-desc">{addons.length ? 'Os addons ativos ainda não têm canais. Quando eles fornecerem a lista, os canais aparecem aqui.' : 'Nenhum addon ativo no momento.'}</p>
+        </>}
+      </header>
+
+      <div className="tv-bar">
+        <div className="tv-chips">
+          <button className="tv-chip" aria-pressed={filter==='all'} onClick={()=>setFilter('all')}>Todos</button>
+          <button className="tv-chip" aria-pressed={filter==='fav'} onClick={()=>setFilter('fav')}>★ Favoritos{favCh.length>0 && ` ${favCh.length}`}</button>
+          {addons.map(a=>(
+            <button key={a.id} className="tv-chip" aria-pressed={filter===a.id} onClick={()=>setFilter(a.id)}>{a.name}</button>
+          ))}
+          <button className="tv-chip add" onClick={()=>setShowAddon(true)}>+ Addon</button>
+        </div>
+        <label className="tv-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{flex:'none',opacity:.6}}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="tv-q" placeholder="Buscar canais" value={q} onChange={e=>setQ(e.target.value)}/>
+          {q && <button type="button" className="tv-clear" aria-label="Limpar busca" onClick={()=>setQ('')}>×</button>}
+        </label>
+      </div>
+
+      {!gridMode ? (
+        <main className="hm-rows" onMouseLeave={()=>setPaused(false)}>
+          {liveCh.length>0 && <Row key="live" title="Ao vivo agora" sub={nCh(liveCh.length)}>{liveCh.map(card)}</Row>}
+          {favCh.length>0 && <Row key="fav" title="Meus favoritos" sub={nCh(favCh.length)}>{favCh.map(card)}</Row>}
+          {addons.map(a=>{
+            const list = byAddon(a.id);
+            return list.length
+              ? <Row key={a.id} title={a.name} sub={nCh(list.length)}>{list.map(card)}</Row>
+              : (
+                <section key={a.id} className="hm-row">
+                  <div className="hm-row-hd"><h2 className="hm-row-ttl">{a.name}</h2><span className="hm-row-sub">{nCh(0)}</span></div>
+                  <p className="hm-empty hm-empty-row">Este addon ainda não tem canais. Quando ele fornecer a lista, os canais aparecem aqui.</p>
+                </section>
+              );
+          })}
+          {addons.length===0 && <p className="hm-empty hm-empty-row">Nenhum addon ativo. Use “+ Addon” para adicionar uma fonte de canais.</p>}
+        </main>
+      ) : (
+        <section className="hm-page tv-gridpage" onMouseLeave={()=>setPaused(false)}>
+          <div className="tv-gridhd"><h2 className="hm-row-ttl">{label}</h2><span className="hm-row-sub">{nCh(items.length)}</span></div>
+          {items.length ? <div className="hm-grid">{items.map(card)}</div> : <p className="hm-empty">{empty}</p>}
+        </section>
+      )}
+
+      {showAddon && (
+        <div className="modal-ov" onClick={()=>setShowAddon(false)}>
+          <div className="modal-box" role="dialog" aria-modal="true" aria-labelledby="ad-ttl" style={{maxWidth:400}} onClick={e=>e.stopPropagation()}>
+            <div className="modal-title" id="ad-ttl">Addons</div>
+            <div className="modal-sub">Cada addon é uma fonte de canais e vira uma categoria nesta tela.</div>
+            <input id="ad-name" className="s-inp" placeholder="Nome do novo addon" value={adName} autoFocus
+                   onChange={e=>{ setAdName(e.target.value); setAdErr(''); }}
+                   onKeyDown={e=>{ if (e.key==='Enter') addAddon(); }}/>
+            {adErr && <div className="ad-err" role="alert">{adErr}</div>}
+            <button className="btn-red" style={{marginTop:4}} onClick={addAddon}>Adicionar addon</button>
+            <div className="ad-list">
+              {addons.length===0 && <div className="ad-item"><span>Nenhum addon ainda.</span></div>}
+              {addons.map(a=>(
+                <div className="ad-item" key={a.id}>
+                  <span>{a.name}</span>
+                  <span className="ad-count">{nCh(CHANNELS.filter(c=>c.addon===a.id).length)}</span>
+                  <button className="ad-rm" aria-label={`Remover ${a.name}`} onClick={()=>removeAddon(a.id)}>×</button>
+                </div>
+              ))}
+            </div>
+            <button className="btn-ghost" onClick={()=>setShowAddon(false)}>Fechar</button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+const NAV = [
+  { id:'search',  label:'Buscar',     d:<><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></> },
+  { id:'home',    label:'Início',     d:<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></> },
+  { id:'library', label:'Biblioteca', d:<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/> },
+  { id:'tv',      label:'TV',         d:<><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></> },
+];
+
+function HomeView({ profile, onBack }) {
+  const [tab, setTab]         = useState('home');
+  const [heroIdx, setHeroIdx] = useState(0);
+  const [featId, setFeatId]   = useState(HERO_IDS[0]);
+  const [paused, setPaused]   = useState(false);
+  const [solid, setSolid]     = useState(false);
+  const [now, setNow]         = useState(()=>new Date());
+  const [query, setQuery]     = useState('');
+  const [list, setList]       = useState(()=>{ try { return JSON.parse(localStorage.getItem('wf_list')||'[]'); } catch { return []; } });
+
+  useEffect(()=>{ const i=setInterval(()=>setNow(new Date()),15000); return ()=>clearInterval(i); },[]);
+  useEffect(()=>{
+    const on=()=>setSolid(window.scrollY>40);
+    window.addEventListener('scroll',on,{passive:true});
+    return ()=>window.removeEventListener('scroll',on);
+  },[]);
+  useEffect(()=>{ window.scrollTo(0,0); },[tab]);
+  useEffect(()=>{ setFeatId(HERO_IDS[heroIdx]); },[heroIdx]);
+  useEffect(()=>{
+    if (paused || tab!=='home') return;
+    const i=setInterval(()=>setHeroIdx(x=>(x+1)%HERO_IDS.length),8000);
+    return ()=>clearInterval(i);
+  },[paused,tab]);
+
+  const toggleList = id => {
+    const next = list.includes(id) ? list.filter(x=>x!==id) : [...list,id];
+    setList(next);
+    try { localStorage.setItem('wf_list', JSON.stringify(next)); } catch {}
+  };
+  const focus = id => { setFeatId(id); setPaused(true); };
+  const open = id => { setFeatId(id); setPaused(true); setTab('home'); window.scrollTo({top:0,behavior:'smooth'}); };
+
+  const t = TMAP[featId];
+  const inList = list.includes(t.id);
+  const clock = now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const results = TITLES.filter(x=>norm(`${x.title} ${x.kind} ${x.genres.join(' ')} ${x.year}`).includes(norm(query.trim())));
+  const grid = items => (
+    <div className="hm-grid">
+      {items.map(x=><TitleCard key={x.id} t={x} cw={!!x.cw} featured={false} onFocus={()=>{}} onOpen={open}/>)}
+    </div>
+  );
+
+  return (
+    <div className="home">
+      {tab==='home' && (
+        <div className="hm-bd">
+          <div className="hm-bd-layer" key={t.id}><Scene t={t}/></div>
+          <div className="hm-shade"/>
+        </div>
+      )}
+
+      <nav className={`hm-nav${solid||tab==='search'||tab==='library'?' solid':''}`}>
+        <div className="hm-left">
+          <div className="hm-av" style={{background:GR[profile.gi%GR.length]}} onClick={onBack} title="Trocar perfil">{profile.initial}</div>
+          <span className="logo" style={{fontSize:22}}><span className="logo-w">WATCH</span><span className="logo-f">FIRST</span></span>
+        </div>
+        <div className="hm-tabs">
+          {NAV.map(n=>(
+            <button key={n.id} className={`hm-tab${tab===n.id?' act':''}`} onClick={()=>setTab(n.id)} aria-label={n.label}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">{n.d}</svg>
+              <span>{n.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="hm-right">
+          <button className="hm-icbtn" aria-label="Configurações">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          </button>
+          <span className="hm-clock">{clock}</span>
+        </div>
+      </nav>
+
+      {tab==='home' && <>
+        <header className="hm-hero">
+          {t.original && <div className="hm-eyebrow">Original WATCHFIRST</div>}
+          <h1 className="hm-title" key={'t'+t.id}>{t.title}</h1>
+          <div className="hm-meta">
+            <span>{t.year}</span><i className="hm-sep"/><span>{t.dur}</span><i className="hm-sep"/>
+            <span className="hm-score">★ {t.score}</span><span className="hm-age">{t.age}</span>
+          </div>
+          <div className="hm-genres">{t.kind} · {t.genres.join(' · ')}</div>
+          <p className="hm-desc">{t.desc}</p>
+          <div className="hm-btns">
+            <button className="hm-play">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              {t.cw ? 'Continuar' : 'Assistir'}
+            </button>
+            <button className={`hm-ghost${inList?' on':''}`} onClick={()=>toggleList(t.id)}>
+              {inList ? '✓ Na minha lista' : '+ Minha lista'}
+            </button>
+          </div>
+          <div className="hm-dots">
+            {HERO_IDS.map((id,i)=>(
+              <button key={id} className={`hm-dot${featId===id?' act':''}`} aria-label={TMAP[id].title}
+                      onClick={()=>{ setHeroIdx(i); setFeatId(id); }}/>
+            ))}
+          </div>
+        </header>
+        <main className="hm-rows" onMouseLeave={()=>setPaused(false)}>
+          {HOME_ROWS.map(r=>(
+            <Row key={r.title} title={r.title} sub={`${r.ids.length} títulos`}>
+              {r.ids.map(id=><TitleCard key={id} t={TMAP[id]} cw={r.cw} featured={featId===id} onFocus={focus} onOpen={open}/>)}
+            </Row>
+          ))}
+        </main>
+      </>}
+
+      {tab==='search' && (
+        <section className="hm-page">
+          <h2 className="hm-page-ttl">Buscar</h2>
+          <div className="hm-search">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="hm-q" autoFocus placeholder="Títulos, gêneros ou ano" value={query} onChange={e=>setQuery(e.target.value)}/>
+          </div>
+          {results.length ? grid(results) : <p className="hm-empty">Nenhum título encontrado para “{query}”. Tente outro nome ou um gênero, como “drama”.</p>}
+        </section>
+      )}
+
+      {tab==='library' && (
+        <section className="hm-page">
+          <h2 className="hm-page-ttl">Biblioteca</h2>
+          <h3 className="hm-page-sub">Minha lista</h3>
+          {list.length ? grid(list.map(id=>TMAP[id])) : <p className="hm-empty">Sua lista está vazia. Use “+ Minha lista” em qualquer título da tela inicial para salvar aqui.</p>}
+          <h3 className="hm-page-sub">Continuar assistindo</h3>
+          {grid(TITLES.filter(x=>x.cw))}
+        </section>
+      )}
+
+      {tab==='tv' && <TvHome/>}
+    </div>
+  );
+}
+
+function App() {
+  const [view,      setView]      = useState('splash');
+  const [showPlans, setShowPlans] = useState(false);
+  const [prof,      setProf]      = useState(null);
+
+  useEffect(()=>{
+    const t = setTimeout(()=>setView('login'), 1600);
+    return ()=>clearTimeout(t);
+  },[]);
+
+  if (view==='splash') return <div className="splash"><div className="splash-logo"><span className="logo-w">WATCH</span><span className="logo-f">FIRST</span></div></div>;
+
+  return (
+    <>
+      {view==='login'    && <LoginView onLogin={()=>setView('profiles')} onShowPlans={()=>setShowPlans(true)} />}
+      {view==='profiles' && !prof && <ProfilesView onSelect={p=>setProf(p)} />}
+      {view==='profiles' && prof  && <HomeView profile={prof} onBack={()=>setProf(null)} />}
+      {showPlans && <PlansModal onClose={()=>setShowPlans(false)} onDone={()=>{setShowPlans(false);setView('profiles');}} />}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>

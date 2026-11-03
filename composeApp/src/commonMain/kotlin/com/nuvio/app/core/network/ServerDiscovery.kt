@@ -8,6 +8,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import com.nuvio.app.core.build.WatchfirstLinks
 
 enum class ServerDiscoveryFailure {
     InvalidUrl,
@@ -48,7 +49,7 @@ private data class DiscoveryCapabilities(
 
 internal object ServerDiscoveryPolicy {
     private const val discoveryPath = "/.well-known/nuvio"
-    private const val canonicalOfficialBackend = "https://api.nuvio.tv"
+    private const val canonicalOfficialBackend = WatchfirstLinks.OFFICIAL_BACKEND
     private val json = Json { ignoreUnknownKeys = true }
 
     fun discoveryUrl(input: String): String {

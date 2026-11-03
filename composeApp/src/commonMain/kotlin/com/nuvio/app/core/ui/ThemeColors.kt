@@ -161,16 +161,16 @@ object ThemeColors {
     )
 
     val White = ThemeColorPalette(
-        secondary = Color(0xFFF5F5F5),
-        secondaryVariant = Color(0xFFE0E0E0),
-        nativeAccentHex = "#F5F5F5",
-        onSecondary = Color(0xFF111111),
-        onSecondaryVariant = Color(0xFF111111),
-        focusRing = Color(0xFFFFFFFF),
-        focusBackground = Color(0xFF303030),
-        background = Color(0xFF0D0D0D),
-        backgroundElevated = Color(0xFF1A1A1A),
-        backgroundCard = Color(0xFF222222),
+        secondary = Color(0xFF24FF00),
+        secondaryVariant = Color(0xFF1DE600),
+        nativeAccentHex = "#24FF00",
+        onSecondary = Color(0xFF000000),
+        onSecondaryVariant = Color(0xFF000000),
+        focusRing = Color(0xFF24FF00),
+        focusBackground = Color(0xFF0F2B0B),
+        background = Color(0xFF050805),
+        backgroundElevated = Color(0xFF0E120E),
+        backgroundCard = Color(0xFF151A15),
     )
 
     fun getColorPalette(

@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.antonsc_regular
 import nuvio.composeapp.generated.resources.jetbrains_sans_bold
 import nuvio.composeapp.generated.resources.jetbrains_sans_regular
 import nuvio.composeapp.generated.resources.jetbrains_sans_semibold
@@ -67,21 +68,27 @@ private val JetBrainsSans: FontFamily
         Font(Res.font.jetbrains_sans_regular, FontWeight.Normal, FontStyle.Normal),
     )
 
+private val AntonSC: FontFamily
+    @Composable
+    get() = FontFamily(
+        Font(Res.font.antonsc_regular, FontWeight.Normal, FontStyle.Normal),
+    )
+
 private val NuvioTypography: Typography
     @Composable
     get() = Typography(
         displayLarge = TextStyle(
-            fontFamily = JetBrainsSans,
+            fontFamily = AntonSC,
             fontSize = NuvioTokens.Type.pageDisplay,
             lineHeight = NuvioTokens.LineHeight.pageDisplay,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Normal,
             letterSpacing = NuvioTokens.LetterSpacing.pageDisplay,
         ),
         headlineLarge = TextStyle(
-            fontFamily = JetBrainsSans,
+            fontFamily = AntonSC,
             fontSize = NuvioTokens.Type.headline,
             lineHeight = NuvioTokens.LineHeight.headline,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Normal,
             letterSpacing = NuvioTokens.LetterSpacing.headline,
         ),
         titleLarge = TextStyle(
@@ -175,16 +182,16 @@ private val NuvioTypeTokens: NuvioTypeScale
             fontWeight = FontWeight.SemiBold,
         ),
         displaySm = TextStyle(
-            fontFamily = JetBrainsSans,
+            fontFamily = AntonSC,
             fontSize = NuvioTokens.Type.displaySm,
             lineHeight = NuvioTokens.LineHeight.displaySm,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Normal,
         ),
         displayMd = TextStyle(
-            fontFamily = JetBrainsSans,
+            fontFamily = AntonSC,
             fontSize = NuvioTokens.Type.displayMd,
             lineHeight = NuvioTokens.LineHeight.displayMd,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Normal,
         ),
     )
 

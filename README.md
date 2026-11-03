@@ -1,55 +1,48 @@
-<div align="center">
+# WATCHFIRST BASE
 
-  <img src="https://nuvio.tv/assets/nuvio-app-logo-wordmark.webp" alt="Nuvio" width="320" />
+Base do aplicativo WATCHFIRST para Android e iOS. É uma obra derivada do [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile) 0.6.6-beta, feita em Kotlin Multiplatform com Compose Multiplatform e licenciada sob a GPL-3.0.
 
-  <p>
-    A free, open-source media app for your phone, your desktop, and the TV you already own.
-    <br />
-    Bring your own sources. Nuvio turns them into a library with artwork, ratings, subtitles, and your place saved on every screen.
-  </p>
+## Estado atual
 
-  [Website](https://nuvio.tv) · [GitHub releases](https://github.com/NuvioMedia/NuvioMobile/releases/latest) · [Support Nuvio](https://nuvio.tv/support)
+- A troca de marca está aplicada (nome, identificadores, cores, fonte Anton SC, ícones, textos em 27 idiomas). O detalhe está em [CHANGES.md](CHANGES.md).
+- **Esta base não foi compilada nem testada.** A preparação foi feita por edição de arquivos, sem Android Studio. O primeiro build pode apontar erros que precisam de ajuste.
+- **Sem backend o app não funciona.** Contas, perfis, biblioteca e progresso dependem de um projeto Supabase com funções que não estão neste repositório. A lista completa está em [watchfirst/BACKEND-CONTRACT.md](watchfirst/BACKEND-CONTRACT.md).
 
-</div>
+## Para compilar
 
-## Get Nuvio Mobile
+Android: Android Studio atual, JDK 17 e o SDK do Android com `compileSdk` 37. iOS: macOS com Xcode.
 
-- [Android on Google Play](https://play.google.com/store/apps/details?id=com.nuvio.app)
-- [Android APK](https://github.com/NuvioMedia/NuvioMobile/releases/latest)
-- iOS via AltStore or SideStore: add [this source URL](https://raw.githubusercontent.com/NuvioMedia/NuvioMobile/cmp-rewrite/store.json) in the app's Sources section, then install Nuvio.
+1. Copie `local.properties.example` para `local.properties` e preencha (o arquivo já está no `.gitignore`).
+2. Abra esta pasta no Android Studio, ou rode `gradlew.bat :androidApp:assembleFullDebug`.
 
-## Build from source
+No Windows, mantenha a pasta fora do OneDrive. Se alguma ferramenta nativa reclamar dos espaços no nome da pasta, renomeie para `WATCHFIRST-BASE`.
 
-```bash
-git clone https://github.com/NuvioMedia/NuvioMobile.git
-cd NuvioMobile
-```
+## Antes de publicar
 
-### Android
+- Trocar o domínio de teste `watchfirst.invalid` pelo real em `WatchfirstLinks.kt`, e recolocar o App Link no `AndroidManifest.xml` se quiser links https que abram o app.
+- Publicar as páginas de termos e privacidade que o app abre.
+- Trocar o ícone provisório (monograma WF). O seletor de ícone mostra seis opções idênticas.
+- Criar o backend, usar chaves de API próprias e uma keystore própria para assinar.
+- Revisar as licenças dos binários em `composeApp/libs`, listados em [NOTICE.md](NOTICE.md).
+- Os outros temas de cor do seletor (inclusive um vermelho) são herdados do Nuvio. Só o tema padrão é WATCHFIRST.
 
-Android development requires Android Studio and the Android SDK.
+## Fontes de conteúdo
 
-```bash
-./gradlew :androidApp:assembleFullDebug
-```
+A base não traz catálogos, canais nem fontes. O runtime de plugins e o P2P ficam desligados em `AppFeaturePolicy`, em todas as distribuições. Use apenas conteúdo que você tem direito de distribuir.
 
-### iOS
+## Atualizar a partir do Nuvio
 
-iOS development requires macOS and Xcode.
+O remoto `upstream` aponta para o repositório original e o ramo principal é `main`. O primeiro commit é o código do Nuvio sem alterações e o segundo traz a troca de marca, então `git diff main~1 main` mostra tudo que mudou.
 
 ```bash
-env NUVIO_IOS_DISTRIBUTION=full xcodebuild \
-  -project iosApp/iosApp.xcodeproj \
-  -scheme iosApp \
-  -configuration Debug \
-  -sdk iphonesimulator \
-  -derivedDataPath build/ios-derived-full-simulator \
-  CODE_SIGNING_ALLOWED=NO \
-  build
+git fetch upstream --tags
+git merge <tag-nova>   # resolva os conflitos de marca
 ```
 
-The shared app is built with Kotlin Multiplatform and Compose Multiplatform.
+## Referência de design
 
-## License
+`watchfirst/web-prototype/watchfirst.html` é o protótipo web da interface (login, perfis, início e TV), com as cores e a fonte da marca.
 
-[GNU General Public License v3.0](./LICENSE)
+## Licença
+
+GPL-3.0, no arquivo [LICENSE](LICENSE). Veja [NOTICE.md](NOTICE.md) para as obrigações e os créditos.

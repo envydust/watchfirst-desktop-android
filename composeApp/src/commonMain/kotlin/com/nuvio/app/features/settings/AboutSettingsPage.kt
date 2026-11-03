@@ -30,8 +30,9 @@ import nuvio.composeapp.generated.resources.compose_settings_root_privacy_policy
 import nuvio.composeapp.generated.resources.updates_debug_test_description
 import nuvio.composeapp.generated.resources.updates_debug_test_title
 import org.jetbrains.compose.resources.stringResource
+import com.nuvio.app.core.build.WatchfirstLinks
 
-private const val PRIVACY_POLICY_URL = "https://nuvio.tv/privacy-policy"
+private const val PRIVACY_POLICY_URL = WatchfirstLinks.PRIVACY_POLICY_URL
 
 internal fun LazyListScope.aboutSettingsContent(
     isTablet: Boolean,

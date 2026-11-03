@@ -1,0 +1,40 @@
+# Copie este arquivo para local.properties (ele está no .gitignore). Nunca versione chaves.
+
+# Android SDK: o Android Studio preenche sozinho. Exemplo:
+# sdk.dir=C\:\\Users\\SEU_USUARIO\\AppData\\Local\\Android\\Sdk
+
+# Distribuição Android: full (APK direto) ou playstore
+NUVIO_ANDROID_DISTRIBUTION=full
+
+# Backend Supabase (veja watchfirst/BACKEND-CONTRACT.md)
+NUVIO_SUPABASE_URL=
+NUVIO_SUPABASE_ANON_KEY=
+NUVIO_SUPABASE_FALLBACK_URL=
+
+# Metadados e rastreamento: cada serviço exige a sua própria conta e chave
+TMDB_API_KEY=
+TRAKT_CLIENT_ID=
+TRAKT_CLIENT_SECRET=
+TRAKT_REDIRECT_URI=watchfirst://auth/trakt
+SIMKL_CLIENT_ID=
+SIMKL_APP_NAME=watchfirst
+SIMKL_REDIRECT_URI=watchfirst://auth/simkl
+MDBLIST_CLIENT_ID=
+INTRODB_API_URL=
+IMDB_RATINGS_API_BASE_URL=
+IMDB_TAPFRAME_API_BASE_URL=
+
+# Opcional: integração com conta própria de nuvem
+PREMIUMIZE_CLIENT_ID=
+
+# Diagnóstico (opcional): sem SENTRY_DSN o Sentry não inicia
+SENTRY_DSN=
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+
+# Tela de apoio: deixe vazio, a tela está desligada
+CONTRIBUTIONS_URL=
+SUPPORTERS_WALL_URL=
+DONATIONS_BASE_URL=
+DONATIONS_DONATE_URL=
