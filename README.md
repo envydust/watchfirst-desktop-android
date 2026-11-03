@@ -5,12 +5,13 @@ Base do aplicativo WATCHFIRST para Android e iOS. É uma obra derivada do [Nuvio
 ## Estado atual
 
 - A troca de marca está aplicada (nome, identificadores, cores, fonte Anton SC, ícones, textos em 27 idiomas). O detalhe está em [CHANGES.md](CHANGES.md).
-- **Testado:** compila (`:androidApp:assembleFullDebug`) e roda no emulador Android 17. Abre sem travar, o modo "Continue Without Account" funciona e as telas de login, perfis, início e configurações aparecem com a marca. **Não testado:** iOS, login com backend e reprodução de vídeo. Os testes automáticos (`:composeApp:testAndroidHostTest`) têm 1.869 aprovados e 15 pulados (recursos desligados). Quatro falham (ChapterSkipIntervalsTest, WatchProgressIdentityTest e DownloadSubtitlesTest) e não foram investigados, mas nenhum toca em código alterado pela troca de marca.
+- **Testado:** compila (`:androidApp:assembleFullDebug`) e roda no emulador Android 17. Abre sem travar, o modo "Continue Without Account" funciona e as telas de login, perfis, início e configurações aparecem com a marca. **Não testado:** iOS, login com backend e reprodução de vídeo.
+- **Testes automáticos** (`gradlew.bat :composeApp:testAndroidHostTest -Pnuvio.android.distribution=full`): 1.888 no total, 1.869 aprovados, 15 pulados (são de recursos desligados em `AppFeaturePolicy`) e 4 falhando: `ChapterSkipIntervalsTest` (2), `WatchProgressIdentityTest` (1) e `DownloadSubtitlesTest` (1). O código desses testes e o dos pacotes `player`, `downloads` e `watchprogress` é idêntico ao do Nuvio, mas não rodei o Nuvio original para confirmar que lá os mesmos quatro também falham.
 - **Backend:** sem um projeto Supabase o app funciona só no modo "Continue Without Account", com os dados guardados no aparelho. Entrar com conta, sincronizar e usar o watch party dependem de funções que não estão neste repositório. A lista completa está em [watchfirst/BACKEND-CONTRACT.md](watchfirst/BACKEND-CONTRACT.md).
 
 ## Para compilar
 
-Android: Android Studio atual, JDK 17 e o SDK do Android com `compileSdk` 37. iOS: macOS com Xcode.
+Android: Android Studio atual (os testes foram feitos com o JDK que vem nele) e o SDK do Android com `compileSdk` 37. iOS: macOS com Xcode.
 
 1. Copie `local.properties.example` para `local.properties` e preencha (o arquivo já está no `.gitignore`). O build falha se esse arquivo não existir, mesmo vazio.
 2. Abra esta pasta no Android Studio, ou rode `gradlew.bat :androidApp:assembleFullDebug` no PowerShell ou no cmd.
