@@ -14,14 +14,15 @@ Data: 2026-11-03. Aviso de modificação exigido pela GPL-3.0.
 
 ## Visual
 
-- Tema padrão: preto com verde #24FF00 (paleta `ThemeColors.White`, exibida como "WATCHFIRST").
+- Tema padrão e único: preto com verde #24FF00 (paleta `ThemeColors.White`, exibida como "WATCHFIRST"). O seletor de temas fica escondido e qualquer tema salvo ou sincronizado vira o WATCHFIRST (`themeSelectionEnabled` em `AppFeaturePolicy`).
 - Fonte Anton SC em `displayLarge`, `headlineLarge`, `displaySm` e `displayMd`.
 - 96 imagens de marca regeneradas nos mesmos tamanhos (ícones Android e iOS, splash, wordmarks, ícones do seletor) e novo ícone de notificação.
 - Cor de fundo da janela e do splash do Android: `#050805`.
+- Corrigido após testar no emulador: o fundo roxo da tela de login e o botão "Sign In" branco agora seguem a marca (gradiente verde escuro e botão #24FF00); a cor padrão do avatar e da malha de fundo dos perfis passou de azul para #24FF00; o tema define a cor `tertiary` (antes vinha rosa do Material); os títulos em Anton SC usam espaçamento positivo (o negativo, feito para a fonte original, sobrepunha as letras).
 
 ## Funcionalidades (`AppFeaturePolicy`, em todas as distribuições)
 
-Desligados: runtime de plugins, P2P, atualizador interno, doações, página de apoiadores e conexão com servidores customizados.
+Desligados: runtime de plugins, P2P, atualizador interno, doações, página de apoiadores, conexão com servidores customizados e seletor de temas.
 
 ## Removido
 

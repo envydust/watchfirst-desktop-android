@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.ui.NuvioTokens
 import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.features.p2p.P2pSettingsRepository
@@ -370,13 +371,15 @@ internal fun settingsSearchEntries(
         )
     }
 
-    addRow(
-        page = SettingsPage.Appearance,
-        key = "theme",
-        title = stringResource(Res.string.settings_appearance_section_theme),
-        pageLabel = appearancePage,
-        section = stringResource(Res.string.settings_appearance_section_theme),
-    )
+    if (AppFeaturePolicy.themeSelectionEnabled) {
+        addRow(
+            page = SettingsPage.Appearance,
+            key = "theme",
+            title = stringResource(Res.string.settings_appearance_section_theme),
+            pageLabel = appearancePage,
+            section = stringResource(Res.string.settings_appearance_section_theme),
+        )
+    }
     addRow(
         page = SettingsPage.Appearance,
         key = "amoled",

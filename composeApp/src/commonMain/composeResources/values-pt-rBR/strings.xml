@@ -2513,7 +2513,7 @@
     <string name="subtitle_shadow">Sombra</string>
     <string name="settings_playback_page_audio">Áudio</string>
     <string name="settings_group_system">Sistema</string>
-    <string name="settings_appearance_description">Temas, ícone do app e idioma</string>
+    <string name="settings_appearance_description">Ícone do app e idioma</string>
     <string name="settings_playback_page_buffer_description">Memória, buffering e cache em disco</string>
     <string name="settings_playback_page_subtitles">Legendas</string>
     <string name="subtitle_font_import">Importar fonte</string>

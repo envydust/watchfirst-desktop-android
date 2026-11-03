@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.ui.AppTheme
 import com.nuvio.app.core.ui.NuvioBottomSheetActionRow
 import com.nuvio.app.core.ui.NuvioModalBottomSheet
@@ -58,7 +59,7 @@ internal fun LazyListScope.appearanceSettingsContent(
     selectedAppLanguage: AppLanguage,
     onAppLanguageSelected: (AppLanguage) -> Unit,
 ) {
-    item {
+    if (AppFeaturePolicy.themeSelectionEnabled) item {
         SettingsSection(
             title = stringResource(Res.string.settings_appearance_section_theme),
             isTablet = isTablet,

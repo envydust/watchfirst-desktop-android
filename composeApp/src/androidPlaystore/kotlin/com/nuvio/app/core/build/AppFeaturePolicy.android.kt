@@ -15,4 +15,5 @@ actual object AppFeaturePolicy {
     actual val mediaPlaybackForegroundServiceEnabled: Boolean = false
     actual val downloadForegroundServiceEnabled: Boolean = false
     actual val customServerConnectionsEnabled: Boolean = false
+    actual val themeSelectionEnabled: Boolean = false
 }

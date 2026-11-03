@@ -2,11 +2,13 @@ package com.nuvio.app.features.settings
 
 import android.app.Application
 import android.content.Context
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.sync.decodeSyncString
 import com.nuvio.app.core.ui.AppTheme
 import com.nuvio.app.core.ui.CustomThemeColors
 import com.nuvio.app.features.membership.MemberAccessRepository
 import com.nuvio.app.features.membership.MemberAssetStorage
+import org.junit.Assume.assumeTrue
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
@@ -55,6 +57,7 @@ class ThemeSettingsRepositoryTest {
 
     @Test
     fun nonMembersCanSaveAndReloadASolidCustomTheme() {
+        assumeTrue(AppFeaturePolicy.themeSelectionEnabled)
         val colors = CustomThemeColors.solid(0x2255AA)
 
         ThemeSettingsRepository.setCustomTheme(colors)
@@ -68,6 +71,7 @@ class ThemeSettingsRepositoryTest {
 
     @Test
     fun savingAGradientWithoutMembershipStoresOnlyItsMainColor() {
+        assumeTrue(AppFeaturePolicy.themeSelectionEnabled)
         ThemeSettingsRepository.setCustomTheme(CustomThemeColors(0x112233, 0x445566, 0x778899))
         val expected = CustomThemeColors.solid(0x445566)
 
@@ -79,6 +83,7 @@ class ThemeSettingsRepositoryTest {
 
     @Test
     fun loadingASyncedGradientWithoutMembershipPreservesTheSavedStops() {
+        assumeTrue(AppFeaturePolicy.themeSelectionEnabled)
         val saved = CustomThemeColors(0x112233, 0x445566, 0x778899)
         ThemeSettingsStorage.saveCustomThemeColors(saved.encode())
         ThemeSettingsStorage.saveSelectedTheme(AppTheme.CUSTOM.name)

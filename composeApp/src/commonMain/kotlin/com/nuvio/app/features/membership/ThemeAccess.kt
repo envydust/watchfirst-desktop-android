@@ -1,5 +1,6 @@
 package com.nuvio.app.features.membership
 
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.ui.AppTheme
 import com.nuvio.app.core.ui.CustomThemeColors
 
@@ -16,6 +17,7 @@ private val standardThemes = listOf(AppTheme.WHITE) + AppTheme.entries.filterNot
 }
 
 fun availableAppThemes(entitlements: CosmeticEntitlements): List<AppTheme> {
+    if (!AppFeaturePolicy.themeSelectionEnabled) return listOf(AppTheme.WHITE)
     val supporter = supporterThemes
         .filterValues(entitlements::includes)
         .keys
@@ -27,6 +29,7 @@ fun resolveAppTheme(
     selectedTheme: AppTheme?,
     entitlements: CosmeticEntitlements,
 ): AppTheme {
+    if (!AppFeaturePolicy.themeSelectionEnabled) return AppTheme.WHITE
     if (selectedTheme == null) {
         return supporterThemes
             .filterValues(entitlements::includes)

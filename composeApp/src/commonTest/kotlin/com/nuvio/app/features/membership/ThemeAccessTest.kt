@@ -1,5 +1,6 @@
 package com.nuvio.app.features.membership
 
+import com.nuvio.app.core.build.AppFeaturePolicy
 import com.nuvio.app.core.ui.AppTheme
 import com.nuvio.app.core.ui.CustomThemeColors
 import kotlin.test.Test
@@ -9,6 +10,7 @@ import kotlin.test.assertTrue
 class ThemeAccessTest {
     @Test
     fun memberWithoutSavedThemeDefaultsToGold() {
+        if (!AppFeaturePolicy.themeSelectionEnabled) return
         val entitlements = CosmeticEntitlements(setOf(CosmeticEntitlement.GOLD_THEME))
 
         assertEquals(AppTheme.GOLD, resolveAppTheme(null, entitlements))
@@ -24,6 +26,7 @@ class ThemeAccessTest {
 
     @Test
     fun availableThemesKeepStandardThemesAndEntitledSupporterThemes() {
+        if (!AppFeaturePolicy.themeSelectionEnabled) return
         val entitlements = CosmeticEntitlements(setOf(CosmeticEntitlement.ROSE_GOLD_THEME))
         val themes = availableAppThemes(entitlements)
 
@@ -35,6 +38,7 @@ class ThemeAccessTest {
 
     @Test
     fun customThemesAreAvailableWithoutMembership() {
+        if (!AppFeaturePolicy.themeSelectionEnabled) return
         val themes = availableAppThemes(CosmeticEntitlements.None)
 
         assertEquals(AppTheme.CUSTOM, themes.first())
@@ -71,11 +75,23 @@ class ThemeAccessTest {
 
     @Test
     fun customThemeFollowsEntitledPresetsAndPrecedesStandardThemes() {
+        if (!AppFeaturePolicy.themeSelectionEnabled) return
         val themes = availableAppThemes(
             CosmeticEntitlements(setOf(CosmeticEntitlement.GOLD_THEME)),
         )
 
         assertEquals(listOf(AppTheme.GOLD, AppTheme.CUSTOM, AppTheme.WHITE), themes.take(3))
         assertEquals(themes.size, themes.distinct().size)
+    }
+
+    @Test
+    fun onlyTheWatchfirstThemeIsAvailableWhenSelectionIsDisabled() {
+        if (AppFeaturePolicy.themeSelectionEnabled) return
+        val entitled = CosmeticEntitlements(setOf(CosmeticEntitlement.GOLD_THEME))
+
+        assertEquals(listOf(AppTheme.WHITE), availableAppThemes(CosmeticEntitlements.None))
+        assertEquals(listOf(AppTheme.WHITE), availableAppThemes(entitled))
+        assertEquals(AppTheme.WHITE, resolveAppTheme(null, entitled))
+        assertEquals(AppTheme.WHITE, resolveAppTheme(AppTheme.CRIMSON, CosmeticEntitlements.None))
     }
 }

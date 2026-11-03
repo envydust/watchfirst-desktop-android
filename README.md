@@ -5,17 +5,17 @@ Base do aplicativo WATCHFIRST para Android e iOS. É uma obra derivada do [Nuvio
 ## Estado atual
 
 - A troca de marca está aplicada (nome, identificadores, cores, fonte Anton SC, ícones, textos em 27 idiomas). O detalhe está em [CHANGES.md](CHANGES.md).
-- **Esta base não foi compilada nem testada.** A preparação foi feita por edição de arquivos, sem Android Studio. O primeiro build pode apontar erros que precisam de ajuste.
-- **Sem backend o app não funciona.** Contas, perfis, biblioteca e progresso dependem de um projeto Supabase com funções que não estão neste repositório. A lista completa está em [watchfirst/BACKEND-CONTRACT.md](watchfirst/BACKEND-CONTRACT.md).
+- **Testado:** compila (`:androidApp:assembleFullDebug`) e roda no emulador Android 17. Abre sem travar, o modo "Continue Without Account" funciona e as telas de login, perfis, início e configurações aparecem com a marca. **Não testado:** iOS, login com backend e reprodução de vídeo. Os testes automáticos (`:composeApp:testAndroidHostTest`) têm 1.869 aprovados e 15 pulados (recursos desligados). Quatro falham (ChapterSkipIntervalsTest, WatchProgressIdentityTest e DownloadSubtitlesTest) e não foram investigados, mas nenhum toca em código alterado pela troca de marca.
+- **Backend:** sem um projeto Supabase o app funciona só no modo "Continue Without Account", com os dados guardados no aparelho. Entrar com conta, sincronizar e usar o watch party dependem de funções que não estão neste repositório. A lista completa está em [watchfirst/BACKEND-CONTRACT.md](watchfirst/BACKEND-CONTRACT.md).
 
 ## Para compilar
 
 Android: Android Studio atual, JDK 17 e o SDK do Android com `compileSdk` 37. iOS: macOS com Xcode.
 
-1. Copie `local.properties.example` para `local.properties` e preencha (o arquivo já está no `.gitignore`).
-2. Abra esta pasta no Android Studio, ou rode `gradlew.bat :androidApp:assembleFullDebug`.
+1. Copie `local.properties.example` para `local.properties` e preencha (o arquivo já está no `.gitignore`). O build falha se esse arquivo não existir, mesmo vazio.
+2. Abra esta pasta no Android Studio, ou rode `gradlew.bat :androidApp:assembleFullDebug` no PowerShell ou no cmd.
 
-No Windows, mantenha a pasta fora do OneDrive. Se alguma ferramenta nativa reclamar dos espaços no nome da pasta, renomeie para `WATCHFIRST-BASE`.
+No Windows, mantenha a pasta fora do OneDrive. O Git Bash não consegue chamar o `gradlew.bat` por causa dos espaços no nome da pasta. Se mais alguma ferramenta reclamar disso, renomeie para `WATCHFIRST-BASE`.
 
 ## Antes de publicar
 
@@ -24,7 +24,7 @@ No Windows, mantenha a pasta fora do OneDrive. Se alguma ferramenta nativa recla
 - Trocar o ícone provisório (monograma WF). O seletor de ícone mostra seis opções idênticas.
 - Criar o backend, usar chaves de API próprias e uma keystore própria para assinar.
 - Revisar as licenças dos binários em `composeApp/libs`, listados em [NOTICE.md](NOTICE.md).
-- Os outros temas de cor do seletor (inclusive um vermelho) são herdados do Nuvio. Só o tema padrão é WATCHFIRST.
+- O app tem só o tema verde WATCHFIRST: o seletor de temas do Nuvio está desligado. Para religar as outras cores, ponha `themeSelectionEnabled` em `true` nos arquivos `AppFeaturePolicy`.
 
 ## Fontes de conteúdo
 

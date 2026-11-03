@@ -20,4 +20,5 @@ expect object AppFeaturePolicy {
     val mediaPlaybackForegroundServiceEnabled: Boolean
     val downloadForegroundServiceEnabled: Boolean
     val customServerConnectionsEnabled: Boolean
+  val themeSelectionEnabled: Boolean
 }

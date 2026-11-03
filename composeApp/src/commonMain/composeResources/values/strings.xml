@@ -2514,7 +2514,7 @@
     <string name="settings_playback_page_buffer_description">Memory, buffering, and disk cache</string>
     <string name="settings_playback_page_p2p">P2P streaming</string>
     <string name="settings_playback_page_p2p_description">Torrent playback, profile, and cache</string>
-    <string name="settings_appearance_description">Themes, app icon, and language</string>
+    <string name="settings_appearance_description">App icon and language</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="subtitle_appearance">Appearance</string>
     <string name="subtitle_preview">Preview</string>
