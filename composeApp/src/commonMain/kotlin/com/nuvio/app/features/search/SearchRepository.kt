@@ -451,7 +451,11 @@ object SearchRepository {
                 }
         }
 
+    // Live TV addons stay in the "TV ao vivo" tab (and the MAX live row of Busca), never in Descobrir.
     private fun buildDiscoverSources(addons: List<ManagedAddon>): List<DiscoverCatalogOption> =
+        buildDiscoverSourcesFrom(addons.filterNot { com.nuvio.app.features.access.WatchfirstAccess.isLiveAddon(it.manifestUrl) })
+
+    private fun buildDiscoverSourcesFrom(addons: List<ManagedAddon>): List<DiscoverCatalogOption> =
         addons.mapNotNull { addon ->
             val manifest = addon.manifest ?: return@mapNotNull null
             addon to manifest

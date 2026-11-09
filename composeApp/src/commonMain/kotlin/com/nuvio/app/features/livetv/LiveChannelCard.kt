@@ -298,7 +298,12 @@ internal fun LiveChannelTile(
                     model = logo,
                     contentDescription = null,
                     contentScale = ContentScale.Fit,
-                    modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.5f).fillMaxHeight(0.46f),
+                    // Sits above the badge row so the two never touch.
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(bottom = 26.dp)
+                        .fillMaxWidth(0.52f)
+                        .fillMaxHeight(0.36f),
                 )
             }
             LiveBadge(compact = true, modifier = Modifier.align(Alignment.BottomStart).padding(8.dp))
