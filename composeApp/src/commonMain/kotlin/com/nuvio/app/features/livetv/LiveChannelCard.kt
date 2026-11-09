@@ -1,6 +1,9 @@
 package com.nuvio.app.features.livetv
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -179,10 +182,12 @@ private fun ChannelArt(
 
 /** Disney-style channel card: tall, art-led, badge top left, logo and name bottom left. */
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 internal fun LiveChannelCard(
     channel: LiveChannel,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
     favorite: Boolean = false,
     onToggleFavorite: (() -> Unit)? = null,
 ) {
@@ -190,9 +195,14 @@ internal fun LiveChannelCard(
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
     val highlighted = pressed || focused
+    val pressScale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "channelCardPress")
     val colors = MaterialTheme.nuvio.colors
     Box(
         modifier = modifier
+            .graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+            }
             .aspectRatio(0.96f)
             .clip(ChannelCardShape)
             .border(
@@ -200,7 +210,12 @@ internal fun LiveChannelCard(
                 color = if (highlighted) Color.White else colors.borderSubtle,
                 shape = ChannelCardShape,
             )
-            .clickable(interactionSource = interaction, indication = LocalIndication.current, onClick = onClick),
+            .combinedClickable(
+                interactionSource = interaction,
+                indication = LocalIndication.current,
+                onLongClick = onLongClick,
+                onClick = onClick,
+            ),
     ) {
         ChannelArt(channel = channel, watermark = true, modifier = Modifier.fillMaxSize())
         Box(
@@ -276,9 +291,15 @@ internal fun LiveChannelTile(
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
     val highlighted = pressed || focused
+    val pressScale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "channelTilePress")
     val colors = MaterialTheme.nuvio.colors
     Column(
-        modifier = modifier.clickable(interactionSource = interaction, indication = null, onClick = onClick),
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = pressScale
+                scaleY = pressScale
+            }
+            .clickable(interactionSource = interaction, indication = null, onClick = onClick),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(

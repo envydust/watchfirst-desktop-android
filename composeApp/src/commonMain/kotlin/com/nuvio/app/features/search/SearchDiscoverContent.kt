@@ -49,7 +49,6 @@ internal fun LazyListScope.discoverContent(
     item {
         DiscoverFilterRow(
             state = state,
-            modifier = Modifier.padding(horizontal = 16.dp),
             onTypeSelected = onTypeSelected,
             onCatalogSelected = onCatalogSelected,
             onGenreSelected = onGenreSelected,
@@ -137,7 +136,10 @@ private fun DiscoverFilterRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.horizontalScroll(rememberScrollState()),
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         NuvioDropdownChip(

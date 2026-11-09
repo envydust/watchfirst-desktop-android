@@ -1,6 +1,8 @@
 package com.nuvio.app.features.livetv
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -214,7 +216,8 @@ internal fun LiveTvScreen(
                         ChannelRow(
                             channel = channel,
                             favorite = channel.favoriteKey in favorites,
-                            onClick = { selected = channel },
+                            onClick = { onPlay(channel.meta) },
+                            onLongClick = { selected = channel },
                             onToggleFavorite = { toggleFavorite(channel) },
                             modifier = Modifier.padding(horizontal = ScreenGutter),
                         )
@@ -235,9 +238,11 @@ internal fun LiveTvScreen(
                                 contentPadding = PaddingValues(horizontal = ScreenGutter),
                             ) {
                                 items(group.channels, key = { it.manifestUrl + "|" + it.favoriteKey }) { channel ->
+                                    // Tap plays, as on Disney+; long-press opens the channel details.
                                     LiveChannelCard(
                                         channel = channel,
-                                        onClick = { selected = channel },
+                                        onClick = { onPlay(channel.meta) },
+                                        onLongClick = { selected = channel },
                                         favorite = channel.favoriteKey in favorites,
                                         onToggleFavorite = { toggleFavorite(channel) },
                                         modifier = Modifier.width(cardWidth),
@@ -282,11 +287,9 @@ private fun LiveTvSummary(
         Spacer(Modifier.width(10.dp))
         val summary = buildString {
             append(if (state.channels.size == 1) "1 canal" else "${state.channels.size} canais")
-            if (state.totalSources > 0) {
-                append(" · Addons ")
-                append(state.totalSources - state.failedSources)
-                append('/')
-                append(state.totalSources)
+            if (state.failedSources > 0) {
+                append(" · ")
+                append(if (state.failedSources == 1) "1 fonte fora do ar" else "${state.failedSources} fontes fora do ar")
             }
         }
         Text(
@@ -323,14 +326,14 @@ private fun ToggleOption(label: String, icon: ImageVector, selected: Boolean, on
         modifier = Modifier
             .size(40.dp)
             .clip(RoundedCornerShape(9.dp))
-            .background(if (selected) colors.textPrimary else Color.Transparent)
+            .background(if (selected) colors.accent else Color.Transparent)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = if (selected) colors.background else colors.textSecondary,
+            tint = if (selected) colors.onAccent else colors.textSecondary,
             modifier = Modifier.size(18.dp),
         )
     }
@@ -349,7 +352,7 @@ private fun LiveFilterChip(
         modifier = Modifier
             .heightIn(min = 40.dp)
             .clip(shape)
-            .background(if (selected) colors.textPrimary else colors.surfaceCard)
+            .background(if (selected) colors.accent else colors.surfaceCard)
             .border(1.dp, if (selected) Color.Transparent else colors.borderSubtle, shape)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -360,13 +363,13 @@ private fun LiveFilterChip(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (selected) colors.background else FavoriteGold,
+                tint = if (selected) colors.onAccent else FavoriteGold,
                 modifier = Modifier.size(16.dp),
             )
         }
         Text(
             text = label,
-            color = if (selected) colors.background else colors.textPrimary,
+            color = if (selected) colors.onAccent else colors.textPrimary,
             fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,
@@ -414,11 +417,13 @@ private fun ChannelThumb(channel: LiveChannel, modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ChannelRow(
     channel: LiveChannel,
     favorite: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     onToggleFavorite: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -430,7 +435,7 @@ private fun ChannelRow(
             .clip(shape)
             .background(colors.surfaceCard)
             .border(1.dp, colors.borderSubtle, shape)
-            .clickable(onClick = onClick)
+            .combinedClickable(onLongClick = onLongClick, onClick = onClick)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
