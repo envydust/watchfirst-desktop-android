@@ -186,6 +186,8 @@ import dev.chrisbanes.haze.rememberHazeState
 import com.nuvio.app.features.servers.ServerRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import nuvio.composeapp.generated.resources.*
@@ -391,7 +393,11 @@ internal fun MainAppContent(
         ServerRepository.uiState
     }.collectAsStateWithLifecycle()
 
-    LaunchedEffect(appContentGeneration, homeCatalogRefreshKey, serversUiState.revision) {
+    val liveAddonUrls by remember {
+        com.nuvio.app.features.access.WatchfirstAccess.state.map { it.liveAddonUrls }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(com.nuvio.app.features.access.WatchfirstAccess.state.value.liveAddonUrls)
+
+    LaunchedEffect(appContentGeneration, homeCatalogRefreshKey, serversUiState.revision, liveAddonUrls) {
         if (!ownsAppRuntime) return@LaunchedEffect
         val enabledAddons = addonsUiState.addons.enabledAddons()
         if (enabledAddons.isWaitingForFirstEnabledManifest()) return@LaunchedEffect
@@ -415,6 +421,7 @@ internal fun MainAppContent(
 
         when (tab) {
             AppScreenTab.Home -> homeScrollToTopRequests.tryEmit(Unit)
+            AppScreenTab.LiveTv -> Unit
             AppScreenTab.Search -> {
                 searchFocusRequestCount++
                 searchScrollToTopRequests.tryEmit(Unit)
@@ -1368,6 +1375,28 @@ internal fun MainAppContent(
                             AppTabActions(
                                 onCatalogClick = onCatalogClick,
                                 onPosterClick = navController::openPreview,
+                                // Live channels go straight to sources and the player, as on the PC.
+                                onLiveChannelPlay = { channel ->
+                                    launchPlaybackWithDownloadPreference(
+                                        type = channel.type,
+                                        videoId = channel.id,
+                                        parentMetaId = channel.id,
+                                        parentMetaType = channel.type,
+                                        title = channel.name,
+                                        logo = channel.logo,
+                                        poster = channel.poster,
+                                        background = channel.banner,
+                                        seasonNumber = null,
+                                        episodeNumber = null,
+                                        episodeTitle = null,
+                                        episodeThumbnail = null,
+                                        pauseDescription = channel.description,
+                                        resumePositionMs = null,
+                                        resumeProgressFraction = null,
+                                        manualSelection = false,
+                                        startFromBeginning = true,
+                                    )
+                                },
                                 onPosterLongClick = { meta ->
                                     openPosterActions(PosterActionTarget(preview = meta))
                                 },

@@ -37,4 +37,12 @@ internal actual object WatchfirstAccessStorage {
     actual fun saveIdentity(name: String, email: String) {
         preferences?.edit()?.putString(KEY_NAME, name)?.putString(KEY_EMAIL, email)?.apply()
     }
+
+    actual fun loadValue(key: String): String? = preferences?.getString("extra_$key", null)
+
+    actual fun saveValue(key: String, value: String?) {
+        preferences?.edit()?.apply {
+            if (value == null) remove("extra_$key") else putString("extra_$key", value)
+        }?.apply()
+    }
 }

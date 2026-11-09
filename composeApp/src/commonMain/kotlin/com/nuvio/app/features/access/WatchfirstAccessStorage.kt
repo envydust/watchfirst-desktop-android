@@ -9,4 +9,7 @@ internal expect object WatchfirstAccessStorage {
     fun loadName(): String?
     fun loadEmail(): String?
     fun saveIdentity(name: String, email: String)
+    /** Small extra values: plan, live addon list, favorite channels. */
+    fun loadValue(key: String): String?
+    fun saveValue(key: String, value: String?)
 }

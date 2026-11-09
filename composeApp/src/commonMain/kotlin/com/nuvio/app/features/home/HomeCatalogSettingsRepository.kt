@@ -1,6 +1,7 @@
 package com.nuvio.app.features.home
 
 import androidx.compose.ui.text.intl.Locale
+import com.nuvio.app.features.access.WatchfirstAccess
 import com.nuvio.app.features.addons.ManagedAddon
 import com.nuvio.app.features.collection.Collection
 import com.nuvio.app.features.collection.CollectionRepository
@@ -142,7 +143,13 @@ object HomeCatalogSettingsRepository {
     fun syncCatalogs(addons: List<ManagedAddon>) {
         ensureLoaded()
         val collections = CollectionRepository.collections.value
-        val syncInput = CatalogSyncInput(addons, collections, Locale.current.toLanguageTag(), ServerRepository.uiState.value.revision)
+        val syncInput = CatalogSyncInput(
+            addons,
+            collections,
+            Locale.current.toLanguageTag(),
+            ServerRepository.uiState.value.revision,
+            WatchfirstAccess.state.value.liveAddonUrls,
+        )
         if (lastCatalogSync == syncInput) return
         definitions = buildHomeCatalogDefinitions(addons)
         collectionDefinitions = buildCollectionDefinitions(collections)
@@ -644,4 +651,5 @@ private data class CatalogSyncInput(
     val collections: List<Collection>,
     val locale: String,
     val serverRevision: Int,
+    val liveAddonUrls: Set<String>,
 )

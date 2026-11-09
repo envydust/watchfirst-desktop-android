@@ -43,6 +43,9 @@ internal const val WATCHFIRST_BASIC_SITE = "https://membros.watchfirst.com.br"
 internal const val WATCHFIRST_MAX_SITE = "https://max.watchfirst.com.br"
 
 private const val LIFETIME = 253402300799000L
+private const val KEY_PLAN = "plan"
+private const val KEY_LIVE_ADDONS = "live_addons"
+private const val KEY_FAVORITE_CHANNELS = "favorite_channels"
 private val GATEWAY_URL = Regex("^https://[a-z0-9-]+\\.watchfirst\\.com\\.br/gateway/")
 
 data class WatchfirstMember(
@@ -68,7 +71,19 @@ data class WatchfirstAccessState(
     val addons: List<WatchfirstAddon> = emptyList(),
     /** Shown on the login screen after the service ends the session (blocked, expired, removed). */
     val notice: String? = null,
-)
+    /** Last known plan ("basic" or "max"), kept on the device so the app knows it before the first check. */
+    val plan: String = "",
+    /** Gateway URLs of the addons the administrator marked as live TV (MAX plan only). */
+    val liveAddonUrls: Set<String> = emptySet(),
+) {
+    /** The "TV ao vivo" tab, as on the PC: MAX members only. */
+    val liveTvEnabled: Boolean get() = granted && plan == "max"
+}
+
+/** Stored addon URLs may gain "/manifest.json" or a trailing slash; compare them by this key. */
+internal fun watchfirstAddonUrlKey(url: String): String =
+    url.trim().substringBefore("#").substringBefore("?").trimEnd('/')
+        .removeSuffix("/manifest.json").trimEnd('/').lowercase()
 
 class WatchfirstAccessException(message: String) : Exception(message)
 
@@ -85,12 +100,28 @@ object WatchfirstAccess {
     private var verifyJob: Job? = null
 
     private val _state = MutableStateFlow(
-        WatchfirstAccessState(granted = WatchfirstAccessStorage.loadToken() != null),
+        WatchfirstAccessState(
+            granted = WatchfirstAccessStorage.loadToken() != null,
+            plan = WatchfirstAccessStorage.loadValue(KEY_PLAN).orEmpty(),
+            liveAddonUrls = WatchfirstAccessStorage.loadValue(KEY_LIVE_ADDONS).toLineSet(),
+        ),
     )
     val state: StateFlow<WatchfirstAccessState> = _state.asStateFlow()
 
     val savedName: String get() = WatchfirstAccessStorage.loadName().orEmpty()
     val savedEmail: String get() = WatchfirstAccessStorage.loadEmail().orEmpty()
+
+    /** True for addons that belong to the "TV ao vivo" tab and stay off the home screen. */
+    fun isLiveAddon(manifestUrl: String): Boolean {
+        val live = _state.value.liveAddonUrls
+        return live.isNotEmpty() && watchfirstAddonUrlKey(manifestUrl) in live.mapTo(HashSet(), ::watchfirstAddonUrlKey)
+    }
+
+    fun loadFavoriteChannels(): Set<String> = WatchfirstAccessStorage.loadValue(KEY_FAVORITE_CHANNELS).toLineSet()
+
+    fun saveFavoriteChannels(keys: Set<String>) {
+        WatchfirstAccessStorage.saveValue(KEY_FAVORITE_CHANNELS, keys.joinToString("\n").ifEmpty { null })
+    }
 
     /** Starts the periodic check of the stored session. Safe to call more than once. */
     fun start() {
@@ -208,11 +239,22 @@ object WatchfirstAccess {
             val a = element.jsonObject
             WatchfirstAddon(a.string("id"), a.string("name"), a.string("kind"), a.string("content"), a.string("url"))
         }.filter { it.url.startsWith("https://") && (it.content != "live" || member.plan == "max") }
-        _state.value = WatchfirstAccessState(granted = true, member = member, addons = addons)
+        val liveUrls = addons.filter { it.kind == "stremio" && it.content == "live" }.mapTo(LinkedHashSet()) { it.url }
+        WatchfirstAccessStorage.saveValue(KEY_PLAN, member.plan)
+        WatchfirstAccessStorage.saveValue(KEY_LIVE_ADDONS, liveUrls.joinToString("\n").ifEmpty { null })
+        _state.value = WatchfirstAccessState(
+            granted = true,
+            member = member,
+            addons = addons,
+            plan = member.plan,
+            liveAddonUrls = liveUrls,
+        )
     }
 
     private fun lockLocally(notice: String?) {
         WatchfirstAccessStorage.saveToken(null)
+        WatchfirstAccessStorage.saveValue(KEY_PLAN, null)
+        WatchfirstAccessStorage.saveValue(KEY_LIVE_ADDONS, null)
         _state.update { WatchfirstAccessState(granted = false, notice = notice) }
         scope.launch { syncContent() }
     }
@@ -253,4 +295,7 @@ object WatchfirstAccess {
     }
 
     private fun JsonObject.string(key: String): String = this[key]?.jsonPrimitive?.content.orEmpty()
+
+    private fun String?.toLineSet(): Set<String> =
+        this?.lineSequence()?.map(String::trim)?.filter(String::isNotEmpty)?.toCollection(LinkedHashSet()).orEmpty()
 }

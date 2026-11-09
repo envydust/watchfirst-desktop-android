@@ -30,4 +30,14 @@ internal actual object WatchfirstAccessStorage {
         defaults.setObject(name, forKey = KEY_NAME)
         defaults.setObject(email, forKey = KEY_EMAIL)
     }
+
+    actual fun loadValue(key: String): String? = defaults.stringForKey("watchfirst_access_extra_$key")
+
+    actual fun saveValue(key: String, value: String?) {
+        if (value == null) {
+            defaults.removeObjectForKey("watchfirst_access_extra_$key")
+        } else {
+            defaults.setObject(value, forKey = "watchfirst_access_extra_$key")
+        }
+    }
 }
