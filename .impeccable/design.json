@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-09T00:00:00Z",
+  "title": "Design System: WATCHFIRST (Android)",
+  "extensions": {
+    "colorMeta": {
+      "signal-green": { "role": "primary", "displayName": "Signal Green", "canonical": "#39FF14", "tonalRamp": ["#0B3304", "#145E08", "#1E8A0C", "#28B510", "#39FF14", "#7CFF64", "#B2FF9F", "#E2FFDA"] },
+      "signal-green-deep": { "role": "primary", "displayName": "Deep Signal Green", "canonical": "#20C987", "tonalRamp": ["#06291B", "#0B4A31", "#116C48", "#178F5F", "#20C987", "#5ED9A7", "#9DE8C8", "#DAF7EA"] },
+      "signal-green-glow": { "role": "primary", "displayName": "Signal Glow (focus ring)", "canonical": "#7CFF64" },
+      "on-signal": { "role": "primary", "displayName": "On-Signal", "canonical": "#071108" },
+      "focus-moss": { "role": "primary", "displayName": "Focus Moss", "canonical": "#153523" },
+      "live-red": { "role": "secondary", "displayName": "Live Red", "canonical": "#E5173F", "tonalRamp": ["#2E050D", "#5A0A19", "#870F26", "#B41433", "#E5173F", "#EE5C78", "#F5A0B0", "#FCE0E6"] },
+      "favorite-gold": { "role": "tertiary", "displayName": "Favourite Gold", "canonical": "#FFC107", "tonalRamp": ["#332601", "#664D03", "#997404", "#CC9A06", "#FFC107", "#FFD34F", "#FFE494", "#FFF6DA"] },
+      "night-ground": { "role": "neutral", "displayName": "Night Ground", "canonical": "#080C10", "tonalRamp": ["#080C10", "#111820", "#17212B", "#2C3843", "#4A5662", "#969CA3", "#B8BEC5", "#F5F7F8"] },
+      "slate-surface": { "role": "neutral", "displayName": "Slate Surface", "canonical": "#111820" },
+      "slate-card": { "role": "neutral", "displayName": "Slate Card", "canonical": "#17212B" },
+      "border-default": { "role": "neutral", "displayName": "Border Default", "canonical": "#2C3843" },
+      "border-subtle": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(255, 255, 255, 0.065)" },
+      "text-primary": { "role": "neutral", "displayName": "Text Primary", "canonical": "#F5F7F8" },
+      "text-secondary": { "role": "neutral", "displayName": "Text Secondary", "canonical": "#B8BEC5" },
+      "text-muted": { "role": "neutral", "displayName": "Text Muted", "canonical": "#969CA3" },
+      "error-rose": { "role": "neutral", "displayName": "Error Rose", "canonical": "#E36A8A" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles such as \"TV ao vivo\"." },
+      "headline": { "displayName": "Headline", "purpose": "Large section and detail headings." },
+      "search-title": { "displayName": "Search Title", "purpose": "The underline search field when it is the page title (22 sp on Busca, 18 sp on TV ao vivo)." },
+      "title": { "displayName": "Title", "purpose": "Row headers beside the green rod." },
+      "title-medium": { "displayName": "Title Medium", "purpose": "Button and action labels (Bold on buttons)." },
+      "body": { "displayName": "Body", "purpose": "App body copy." },
+      "body-medium": { "displayName": "Body Medium", "purpose": "Titles under posters, chip text." },
+      "label": { "displayName": "Label", "purpose": "Small semibold labels and metadata." }
+    },
+    "shadows": [
+      { "name": "artwork-scrim", "value": "linear-gradient(180deg, transparent 0%, transparent 45%, rgba(0,0,0,0.82) 100%)", "purpose": "Bottom-up scrim under text on artwork (landscape tiles 82%, channel cards 88%, posters 75%)." },
+      { "name": "overlay-scrim", "value": "rgba(0,0,0,0.56)", "purpose": "Behind sheets and dialogs." },
+      { "name": "elevation-modal", "value": "8dp tonal elevation", "purpose": "Sheets and dialogs only; cards stay flat." }
+    ],
+    "motion": [
+      { "name": "fast", "value": "150ms", "purpose": "Small state changes." },
+      { "name": "normal", "value": "220ms", "purpose": "Default transitions (field underline, chip selection)." },
+      { "name": "sheet-enter", "value": "300ms", "purpose": "Sheet in." },
+      { "name": "sheet-exit", "value": "250ms", "purpose": "Sheet out." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0, 0, 1)", "purpose": "Default easing." },
+      { "name": "press-scale", "value": "scale(0.97)", "purpose": "Pressed cards and tiles." }
+    ],
+    "breakpoints": [
+      { "name": "large-phone", "value": "420dp" },
+      { "name": "tablet", "value": "600dp" },
+      { "name": "tablet-top-nav", "value": "768dp" },
+      { "name": "large-tablet", "value": "840dp" },
+      { "name": "desktop", "value": "1024dp" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Green slab for the main action on a screen (Ver detalhes, Assistir, Entrar).",
+      "html": "<button class=\"ds-btn-primary\">Ver detalhes</button>",
+      "css": ".ds-btn-primary { background: #39FF14; color: #071108; height: 54px; padding: 0 28px; border: none; border-radius: 16px; font-family: 'JetBrains Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform 0.15s, background 0.15s; } .ds-btn-primary:hover { background: #7CFF64; } .ds-btn-primary:focus-visible { outline: 2px solid #7CFF64; outline-offset: 3px; } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:disabled { opacity: 0.38; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip-filter",
+      "description": "TV ao vivo filters; selected fills with Signal Green.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip ds-chip--on\">Todos</button><button class=\"ds-chip\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"#FFC107\"><path d=\"M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z\"/></svg>Favoritos</button><button class=\"ds-chip\">WF Teste Ao Vivo</button></div>",
+      "css": ".ds-chips { display: flex; gap: 8px; background: #080C10; padding: 12px; } .ds-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 10px 16px; border-radius: 999px; background: #17212B; color: #F5F7F8; border: 1px solid rgba(255,255,255,0.065); font-family: 'JetBrains Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.22s; } .ds-chip:hover { background: #1E2A36; } .ds-chip:focus-visible { outline: 2px solid #7CFF64; outline-offset: 2px; } .ds-chip--on { background: #39FF14; color: #071108; border-color: transparent; } .ds-chip--on:hover { background: #39FF14; }"
+    },
+    {
+      "name": "Search Field (page title)",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Boxless search field with an underline that turns 2 dp green on focus.",
+      "html": "<label class=\"ds-search\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14\"/></svg><input placeholder=\"Pesquise por título, gênero...\"></label>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 2px; background: #080C10; color: #B8BEC5; border-bottom: 1px solid rgba(255,255,255,0.22); transition: border-color 0.22s, box-shadow 0.22s; } .ds-search input { flex: 1; background: transparent; border: none; outline: none; color: #F5F7F8; caret-color: #39FF14; font-family: 'JetBrains Sans', sans-serif; font-size: 22px; } .ds-search input::placeholder { color: #B8BEC5; } .ds-search:focus-within { color: #F5F7F8; border-bottom-color: #39FF14; box-shadow: 0 1px 0 #39FF14; }"
+    },
+    {
+      "name": "Row Header",
+      "kind": "custom",
+      "refersTo": "view-all-pill",
+      "description": "Every shelf opens with a 3x20 green rod, a Title heading and an optional ver-tudo pill.",
+      "html": "<div class=\"ds-row-head\"><span class=\"ds-rod\"></span><h3>Em alta no WATCHFIRST</h3><button class=\"ds-viewall\" aria-label=\"Ver tudo\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"#39FF14\"><path d=\"M9.29 6.71a1 1 0 0 0 0 1.41L13.17 12l-3.88 3.88a1 1 0 1 0 1.41 1.41l4.59-4.59a1 1 0 0 0 0-1.41L10.7 6.7a1 1 0 0 0-1.41.01\"/></svg></button></div>",
+      "css": ".ds-row-head { display: flex; align-items: center; gap: 8px; background: #080C10; padding: 12px 16px; } .ds-rod { width: 3px; height: 20px; border-radius: 2px; background: #39FF14; } .ds-row-head h3 { flex: 1; margin: 0; color: #F5F7F8; font-family: 'JetBrains Sans', sans-serif; font-size: 18px; line-height: 24px; font-weight: 600; } .ds-viewall { width: 40px; height: 40px; border: none; border-radius: 16px; background: rgba(57,255,20,0.10); display: grid; place-items: center; cursor: pointer; } .ds-viewall:hover { background: rgba(57,255,20,0.18); } .ds-viewall:focus-visible { outline: 2px solid #7CFF64; outline-offset: 2px; }"
+    },
+    {
+      "name": "Landscape Tile",
+      "kind": "card",
+      "refersTo": "card-landscape-tile",
+      "description": "16:9 artwork tile with hairline, bottom scrim, title logo or name, Novidade tag for current-year titles.",
+      "html": "<a class=\"ds-tile\" href=\"#\"><span class=\"ds-new\">Novidade</span><span class=\"ds-tile-name\">Filme teste 1</span></a>",
+      "css": ".ds-tile { position: relative; display: block; width: 264px; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.065); background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.82)), linear-gradient(135deg, #2B3A67, #6B3A4A); text-decoration: none; transition: transform 0.15s; } .ds-tile:active { transform: scale(0.97); } .ds-tile:focus-visible { outline: 2px solid #FFFFFF; outline-offset: -2px; } .ds-new { position: absolute; top: 8px; left: 8px; padding: 2px 6px; border-radius: 4px; background: #F5F7F8; color: #080C10; font: 700 11px 'JetBrains Sans', sans-serif; } .ds-tile-name { position: absolute; left: 10px; bottom: 10px; color: #FFFFFF; font: 700 14px/17px 'JetBrains Sans', sans-serif; }"
+    },
+    {
+      "name": "Live Channel Card",
+      "kind": "card",
+      "refersTo": "card-channel",
+      "description": "Near-square channel card tinted by the logo colour, rotated logo watermark, AO VIVO badge, white 2 dp frame when focused or pressed.",
+      "html": "<a class=\"ds-chan\" href=\"#\"><span class=\"ds-live\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"#fff\"><path d=\"M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21\"/></svg>AO VIVO</span><span class=\"ds-mark\">ESPORTE</span><span class=\"ds-chan-name\">Esporte 1</span><span class=\"ds-chan-sub\">Esportes · WF Teste Ao Vivo</span></a>",
+      "css": ".ds-chan { position: relative; display: flex; flex-direction: column; justify-content: flex-end; width: 264px; aspect-ratio: 0.96; padding: 14px; border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.065); background: linear-gradient(180deg, transparent 42%, rgba(0,0,0,0.88)), linear-gradient(135deg, #B01818, #6E0F0F 55%, #1A0B0D); text-decoration: none; transition: transform 0.15s; } .ds-chan:hover, .ds-chan:focus-visible { outline: none; border: 2px solid #FFFFFF; } .ds-chan:active { transform: scale(0.97); border: 2px solid #FFFFFF; } .ds-mark { position: absolute; top: 18%; right: -18%; transform: rotate(-18deg); font: 800 72px 'JetBrains Sans', sans-serif; color: #FFFFFF; opacity: 0.16; } .ds-live { position: absolute; top: 12px; left: 12px; display: inline-flex; align-items: center; gap: 2px; padding: 3px 7px 3px 5px; border-radius: 5px; background: #E5173F; color: #FFFFFF; font: 700 11px 'JetBrains Sans', sans-serif; letter-spacing: 0.4px; } .ds-chan-name { color: #FFFFFF; font: 700 17px 'JetBrains Sans', sans-serif; } .ds-chan-sub { color: rgba(255,255,255,0.74); font: 400 12px 'JetBrains Sans', sans-serif; }"
+    },
+    {
+      "name": "Bottom Navigation",
+      "kind": "nav",
+      "refersTo": "chip-filter-selected",
+      "description": "Floating rounded tab bar; active tab in a green-tinted capsule with green icon and label.",
+      "html": "<nav class=\"ds-nav\"><a>Início</a><a>TV ao vivo</a><a class=\"ds-nav--on\" aria-current=\"page\">Busca</a><a>Biblioteca</a><a>Perfil</a></nav>",
+      "css": ".ds-nav { display: inline-flex; gap: 4px; padding: 6px; border-radius: 999px; background: rgba(23,33,43,0.92); border: 1px solid rgba(255,255,255,0.065); font-family: 'JetBrains Sans', sans-serif; } .ds-nav a { padding: 12px 16px; border-radius: 999px; color: #969CA3; font-size: 13px; cursor: pointer; transition: background 0.22s, color 0.22s; } .ds-nav a:hover { color: #F5F7F8; } .ds-nav a:focus-visible { outline: 2px solid #7CFF64; } .ds-nav--on { background: rgba(57,255,20,0.18); color: #39FF14 !important; font-weight: 600; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Console",
+    "overview": "WATCHFIRST on Android is the same console as the WATCHFIRST PC (Windows) app, which is the reference for the shared look, sized down for a phone or tablet. A near-black ground with a cool blue tint sits under slate surfaces. Artwork carries the colour. The chrome speaks in a single neon-green signal: a short bar beside each row title, the line under a focused field, the selected chip, the primary button. Everything else stays quiet so the posters, channel logos and titles hold the member's attention.\n\nDensity is a streaming shelf. Rows of artwork run horizontally under green-barred titles, with 16 dp gutters and 12 dp gaps between cards. Every card has the same hairline frame. Depth comes from tonal steps and scrims over artwork, not from shadows. Type is one family, JetBrains Sans, from the bold page display down to the small semibold labels. The interface language is Brazilian Portuguese (\"Busca\", \"TV ao vivo\", \"Em alta no WATCHFIRST\", \"Ver detalhes\"), and new copy follows it.\n\nLive TV is the one place a second accent appears. A red \"AO VIVO\" badge marks live content, and nothing else uses that red.",
+    "keyCharacteristics": [
+      "Dark, cool, tonal ground (#080C10 → #111820 → #17212B); no light theme ships for this world.",
+      "One neon-green signal for focus, selection, section bars and primary actions.",
+      "Artwork-first cards with a 1 dp white-6.5% hairline and bottom-up black scrims for legibility.",
+      "JetBrains Sans for every role; weight (400/600/700), not a second family, builds the hierarchy.",
+      "Live red only on the \"AO VIVO\" badge; favourite gold only on the favourite star."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Green means \"here, now, this one\": focus, selection, the row bar, the primary action. Don't use it for decoration, for body text or as a large fill behind content.", "section": "colors" },
+      { "name": "The Live Red Rule", "body": "Live Red appears only as the fill of the \"AO VIVO\" badge. Live channel cards take their colour from the channel's own logo, never from the badge red.", "section": "colors" },
+      { "name": "The Artwork Carries Colour Rule", "body": "Card surfaces stay slate. Colour on a card comes from its artwork, or for channels without art, from a gradient tinted by the logo's dominant hue, darkening toward Night Ground.", "section": "colors" },
+      { "name": "The One Family Rule", "body": "Every role is JetBrains Sans. Build hierarchy with size and weight, never with a second display face or a system font.", "section": "typography" },
+      { "name": "The Three Weights Rule", "body": "Use only 400, 600 and 700. Medium (500) and Black (900) are not bundled and will not render as asked.", "section": "typography" },
+      { "name": "The Scrim Not Shadow Rule", "body": "Lift text off artwork with a vertical black gradient, never with a drop shadow or a text shadow.", "section": "elevation" },
+      { "name": "The Press Is Scale Rule", "body": "A pressed card scales to 0.97. A focused or pressed live card swaps its hairline for a 2 dp white frame. There is no hover glow and no elevation change.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do open every shelf with the green-rod row header and keep its title in Brazilian Portuguese.",
+      "Do frame every artwork container with the 1 dp white-6.5% hairline and clip it to 10–12 dp.",
+      "Do put text on artwork over a bottom-up black scrim (75–88% at the base).",
+      "Do use Signal Green for focus, selection and the primary action, with On-Signal (#071108) for content on it.",
+      "Do match the WATCHFIRST PC app when choosing between options: same palette, same JetBrains Sans, same green \"Ver detalhes\" hero button.",
+      "Do keep touch targets at 40 dp or more; chips and toggles are 40 dp tall."
+    ],
+    "donts": [
+      "Don't use Live Red for anything except the \"AO VIVO\" badge, and don't use Favourite Gold for anything except the favourite star.",
+      "Don't draw programme titles, \"Agora:\" lines or progress bars on live cards; the live addons send no guide.",
+      "Don't add drop shadows to cards or text; depth is tonal plus scrims.",
+      "Don't introduce a second typeface or a font weight that is not bundled (500, 900).",
+      "Don't box the search field when it serves as the page title; it is an underline field."
+    ]
+  }
+}
