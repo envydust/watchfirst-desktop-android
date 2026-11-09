@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.nuvio.app.core.ui.DisintegrationRequest
 import com.nuvio.app.core.ui.NuvioLoadingIndicator
+import com.nuvio.app.core.ui.WatchfirstLaunchProgress
 import com.nuvio.app.core.ui.NuvioTokens
 import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.features.cloud.CloudLibraryContentType
@@ -225,7 +226,7 @@ internal fun AppLoadingContent(
                     .height(44.dp),
             )
             Spacer(modifier = Modifier.height(tokens.spacing.sectionGap))
-            NuvioLoadingIndicator()
+            WatchfirstLaunchProgress(modifier = Modifier.fillMaxWidth(0.34f))
         }
     }
 }
