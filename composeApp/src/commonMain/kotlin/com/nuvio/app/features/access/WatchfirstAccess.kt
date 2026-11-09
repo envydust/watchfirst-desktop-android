@@ -17,9 +17,7 @@ import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -95,7 +93,6 @@ object WatchfirstAccess {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val client by lazy { createApiHttpClient() }
     private val syncLock = Mutex()
-    private var verifyJob: Job? = null
 
     private val _state = MutableStateFlow(
         WatchfirstAccessState(
@@ -121,15 +118,12 @@ object WatchfirstAccess {
         WatchfirstAccessStorage.saveValue(KEY_FAVORITE_CHANNELS, keys.joinToString("\n").ifEmpty { null })
     }
 
-    /** Starts the periodic check of the stored session. Safe to call more than once. */
-    fun start() {
-        if (verifyJob?.isActive == true) return
-        verifyJob = scope.launch {
-            while (true) {
-                if (WatchfirstAccessStorage.loadToken() != null) verifySilently()
-                delay(5 * 60_000L)
-            }
-        }
+    /** How often the open app re-reads the member's plan and addons: every minute, like the PC app. */
+    const val CHECK_INTERVAL_MS = 60_000L
+
+    /** Checks the stored session now: refreshes plan and addons, or locks when the service ended it. */
+    suspend fun refreshNow() {
+        if (WatchfirstAccessStorage.loadToken() != null) verifySilently()
     }
 
     /** Connects with the code from the member site (WF-XXXX-XXXX) or an owner-issued access code. */
@@ -238,8 +232,10 @@ object WatchfirstAccess {
             WatchfirstAddon(a.string("id"), a.string("name"), a.string("kind"), a.string("content"), a.string("url"))
         }.filter { it.url.startsWith("https://") && (it.content != "live" || member.plan == "max") }
         val liveUrls = addons.filter { it.kind == "stremio" && it.content == "live" }.mapTo(LinkedHashSet()) { it.url }
-        WatchfirstAccessStorage.saveValue(KEY_PLAN, member.plan)
-        WatchfirstAccessStorage.saveValue(KEY_LIVE_ADDONS, liveUrls.joinToString("\n").ifEmpty { null })
+        // Checked every minute: only touch storage when something changed.
+        val liveValue = liveUrls.joinToString("\n").ifEmpty { null }
+        if (WatchfirstAccessStorage.loadValue(KEY_PLAN) != member.plan) WatchfirstAccessStorage.saveValue(KEY_PLAN, member.plan)
+        if (WatchfirstAccessStorage.loadValue(KEY_LIVE_ADDONS) != liveValue) WatchfirstAccessStorage.saveValue(KEY_LIVE_ADDONS, liveValue)
         _state.value = WatchfirstAccessState(
             granted = true,
             member = member,

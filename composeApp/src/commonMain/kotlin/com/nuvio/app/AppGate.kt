@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.nuvio.app.core.auth.AuthRepository
 import com.nuvio.app.core.auth.AuthState
 import com.nuvio.app.core.auth.DeviceSessionRegistration
@@ -105,7 +106,19 @@ internal fun AppGate(
     LaunchedEffect(Unit) {
         if (!ownsAppRuntime) return@LaunchedEffect
         AuthRepository.initialize()
-        WatchfirstAccess.start()
+    }
+
+    // Same rhythm as the PC app: re-read the plan and addons every minute while the app is on screen,
+    // and right away when it comes back to the foreground. Nothing runs in the background.
+    val accessLifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(accessLifecycle) {
+        if (!ownsAppRuntime) return@LaunchedEffect
+        accessLifecycle.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+            while (true) {
+                WatchfirstAccess.refreshNow()
+                delay(WatchfirstAccess.CHECK_INTERVAL_MS)
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
