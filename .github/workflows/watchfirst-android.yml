@@ -66,9 +66,13 @@ jobs:
       - name: Build APK
         run: |
           if [ "$SIGNED" = "true" ]; then TASK=":androidApp:assembleFullRelease"; else TASK=":androidApp:assembleFullDebug"; fi
+          # The hosted runner has 16 GB. gradle.properties asks for 12 GB (Gradle) + 8 GB (Kotlin daemon), and the
+          # R8 step of the release build then gets killed (exit 143). Compile Kotlin inside Gradle with a 10 GB heap.
+          MEMORY_FLAGS=(-Dorg.gradle.jvmargs="-Xmx10g -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=1536m" -Pkotlin.compiler.execution.strategy=in-process)
           # Downloads from Maven/Gradle occasionally time out on hosted runners; retry the build, not the code.
+          set +e
           for attempt in 1 2 3; do
-            ./gradlew "$TASK" --no-daemon --stacktrace 2>&1 | tee "$RUNNER_TEMP/gradle-$attempt.log"
+            ./gradlew "$TASK" --no-daemon --stacktrace "${MEMORY_FLAGS[@]}" 2>&1 | tee "$RUNNER_TEMP/gradle-$attempt.log"
             status=${PIPESTATUS[0]}
             [ "$status" -eq 0 ] && exit 0
             if grep -qE "^e: |Compilation error|Execution failed for task ':composeApp:compile" "$RUNNER_TEMP/gradle-$attempt.log"; then
