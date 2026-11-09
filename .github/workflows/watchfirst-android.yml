@@ -1,12 +1,18 @@
 name: WATCHFIRST Android
 on:
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'release = APK assinado para membros; debug = APK de teste (instala ao lado, permite inspeção no emulador)'
+        type: choice
+        options: [release, debug]
+        default: release
   push:
     branches: [main, splash-watchfirst]
     paths-ignore:
       - '**.md'
 concurrency:
-  group: watchfirst-android-${{ github.ref }}
+  group: watchfirst-android-${{ github.ref }}-${{ inputs.build_type || 'release' }}
   cancel-in-progress: true
 permissions:
   contents: write
@@ -34,6 +40,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          BUILD_TYPE: ${{ inputs.build_type || 'release' }}
         run: |
           {
             echo "sdk.dir=$ANDROID_HOME"
@@ -43,7 +50,7 @@ jobs:
             echo "NUVIO_SUPABASE_FALLBACK_URL=$SUPABASE_FALLBACK_URL"
             echo "TMDB_API_KEY=$TMDB_API_KEY"
           } > local.properties
-          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+          if [ "$BUILD_TYPE" != "debug" ] && [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
             {
               echo "NUVIO_RELEASE_STORE_FILE=$RUNNER_TEMP/release.jks"
