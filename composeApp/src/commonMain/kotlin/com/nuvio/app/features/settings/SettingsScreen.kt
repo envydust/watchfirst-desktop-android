@@ -88,7 +88,6 @@ import com.nuvio.app.features.tmdb.TmdbSettingsRepository
 import com.nuvio.app.features.watchprogress.ContinueWatchingPreferencesRepository
 import com.nuvio.app.features.watchprogress.ContinueWatchingPreferencesUiState
 import com.nuvio.app.navigation.LocalUseNativeNavigation
-import com.nuvio.app.features.party.PartyRepository
 import com.nuvio.app.features.p2p.P2pSettingsRepository
 import com.nuvio.app.isIos
 import nuvio.composeapp.generated.resources.Res
@@ -104,19 +103,30 @@ private val SettingsSearchRevealThreshold = 28.dp
 private const val SettingsSearchRevealAnimationMillis = 240L
 private const val SettingsSearchRevealHapticDelayMillis = 90L
 
-@Composable
-private fun watchPartyRow(onClick: () -> Unit): (() -> Unit)? {
-    val available by PartyRepository.available.collectAsStateWithLifecycle()
-    return onClick.takeIf { available }
-}
-
 private fun SettingsPage.isEnabledByPolicy(): Boolean =
     when (this) {
         SettingsPage.SupportersContributors -> AppFeaturePolicy.supportersContributorsPageEnabled
         SettingsPage.PlaybackP2p -> P2pSettingsRepository.isVisible
         SettingsPage.PlaybackBuffer -> !isIos
+        // Hidden for members, as on the WATCHFIRST PC app: addons come from the plan and the
+        // WATCHFIRST access replaces the Nuvio account.
+        SettingsPage.Account,
+        SettingsPage.ContentDiscovery,
+        SettingsPage.Addons,
+        SettingsPage.Plugins,
+        SettingsPage.MediaServers,
+        SettingsPage.MediaServer,
+        SettingsPage.Integrations,
+        SettingsPage.TmdbEnrichment,
+        SettingsPage.MdbListRatings,
+        SettingsPage.Debrid,
+        SettingsPage.TraktAuthentication -> false
         else -> true
     }
+
+/** Search only offers what the settings home itself can reach. */
+private fun List<SettingsSearchEntry>.visibleByPolicy(): List<SettingsSearchEntry> =
+    filter { entry -> (entry.target as? SettingsSearchTarget.Page)?.page?.isEnabledByPolicy() ?: true }
 
 @Composable
 private fun settingsPageTitles(): Map<SettingsPage, String> {
@@ -593,7 +603,6 @@ private fun MobileSettingsScreen(
             }
         }
 
-        val watchPartyRowClick = watchPartyRow(onWatchPartyClick)
         NuvioScreen(
             modifier = Modifier.nestedScroll(rootSearchRevealConnection),
             listState = listState,
@@ -624,7 +633,7 @@ private fun MobileSettingsScreen(
                                 liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
                                 switchProfileAvailable = onSwitchProfile != null,
                                 checkForUpdatesAvailable = onCheckForUpdatesClick != null,
-                            )
+                            ).visibleByPolicy()
                         },
                         isTablet = false,
                         showSearchField = rootSearchVisible,
@@ -637,7 +646,8 @@ private fun MobileSettingsScreen(
                             isTablet = false,
                             onPageClick = { openSearchTarget(SettingsSearchTarget.Page(it)) },
                             onSwitchProfileClick = onSwitchProfile,
-                            onWatchPartyClick = watchPartyRowClick,
+                            onCheckForUpdatesClick = onCheckForUpdatesClick,
+                            onTestUpdateBannerClick = onTestUpdateBannerClick,
                         )
                     }
                 }
@@ -682,16 +692,22 @@ private fun MobileSettingsScreen(
                     selectedAppLanguage = selectedAppLanguage,
                     onAppLanguageSelected = onAppLanguageSelected,
                 )
-                SettingsPage.Layout -> layoutSettingsContent(
-                    isTablet = false,
-                    liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
-                    onHomescreenClick = onHomescreenClick,
-                    onMetaScreenClick = onMetaScreenClick,
-                    onStreamsClick = { onPageChange(SettingsPage.Streams) },
-                    onCollectionsClick = onCollectionsClick,
-                    onContinueWatchingClick = onContinueWatchingClick,
-                    onPosterCustomizationClick = { onPageChange(SettingsPage.PosterCustomization) },
-                )
+                SettingsPage.Layout -> {
+                    layoutDisplayEntry(
+                        isTablet = false,
+                        onAppearanceClick = { onPageChange(SettingsPage.Appearance) },
+                    )
+                    layoutSettingsContent(
+                        isTablet = false,
+                        liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
+                        onHomescreenClick = onHomescreenClick,
+                        onMetaScreenClick = onMetaScreenClick,
+                        onStreamsClick = { onPageChange(SettingsPage.Streams) },
+                        onCollectionsClick = onCollectionsClick,
+                        onContinueWatchingClick = onContinueWatchingClick,
+                        onPosterCustomizationClick = { onPageChange(SettingsPage.PosterCustomization) },
+                    )
+                }
                 SettingsPage.About -> aboutSettingsContent(
                     isTablet = false,
                     onSupportersContributorsClick = onSupportersContributorsClick,
@@ -871,7 +887,7 @@ private fun TabletSettingsScreen(
     onCollectionsClick: () -> Unit = {},
     onWatchPartyClick: () -> Unit = {},
 ) {
-    var selectedCategory by rememberSaveable { mutableStateOf(SettingsCategory.Look.name) }
+    var selectedCategory by rememberSaveable { mutableStateOf(SettingsCategory.General.name) }
     val activeCategory = settingsCategoryForName(selectedCategory)
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val topOffset = max(statusBarPadding + 24.dp, 48.dp) + 64.dp
@@ -978,7 +994,6 @@ private fun TabletSettingsScreen(
                     listState.animateScrollToItem(0)
                 }
             }
-            val watchPartyRowClick = watchPartyRow(onWatchPartyClick)
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -1024,7 +1039,7 @@ private fun TabletSettingsScreen(
                                     liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
                                     switchProfileAvailable = onSwitchProfile != null,
                                     checkForUpdatesAvailable = onCheckForUpdatesClick != null,
-                                )
+                                ).visibleByPolicy()
                             },
                             isTablet = true,
                             showSearchField = rootSearchVisible,
@@ -1037,7 +1052,8 @@ private fun TabletSettingsScreen(
                                 isTablet = true,
                                 onPageClick = ::openInlinePage,
                                 onSwitchProfileClick = onSwitchProfile,
-                                onWatchPartyClick = watchPartyRowClick,
+                                onCheckForUpdatesClick = onCheckForUpdatesClick,
+                                onTestUpdateBannerClick = onTestUpdateBannerClick,
                                 category = activeCategory,
                             )
                         }
@@ -1083,16 +1099,22 @@ private fun TabletSettingsScreen(
                         selectedAppLanguage = selectedAppLanguage,
                         onAppLanguageSelected = onAppLanguageSelected,
                     )
-                    SettingsPage.Layout -> layoutSettingsContent(
-                        isTablet = true,
-                        liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
-                        onHomescreenClick = { openInlinePage(SettingsPage.Homescreen) },
-                        onMetaScreenClick = { openInlinePage(SettingsPage.MetaScreen) },
-                        onStreamsClick = { openInlinePage(SettingsPage.Streams) },
-                        onCollectionsClick = onCollectionsClick,
-                        onContinueWatchingClick = { openInlinePage(SettingsPage.ContinueWatching) },
-                        onPosterCustomizationClick = { openInlinePage(SettingsPage.PosterCustomization) },
-                    )
+                    SettingsPage.Layout -> {
+                        layoutDisplayEntry(
+                            isTablet = true,
+                            onAppearanceClick = { openInlinePage(SettingsPage.Appearance) },
+                        )
+                        layoutSettingsContent(
+                            isTablet = true,
+                            liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
+                            onHomescreenClick = { openInlinePage(SettingsPage.Homescreen) },
+                            onMetaScreenClick = { openInlinePage(SettingsPage.MetaScreen) },
+                            onStreamsClick = { openInlinePage(SettingsPage.Streams) },
+                            onCollectionsClick = onCollectionsClick,
+                            onContinueWatchingClick = { openInlinePage(SettingsPage.ContinueWatching) },
+                            onPosterCustomizationClick = { openInlinePage(SettingsPage.PosterCustomization) },
+                        )
+                    }
                     SettingsPage.About -> aboutSettingsContent(
                         isTablet = true,
                         onSupportersContributorsClick = { openInlinePage(SettingsPage.SupportersContributors) },

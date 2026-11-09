@@ -42,7 +42,27 @@ internal fun LazyListScope.aboutSettingsContent(
     onTestUpdateBannerClick: (() -> Unit)?,
     showSupportersContributorsPage: Boolean,
 ) {
-    item {
+    aboutSettingsSection(
+        isTablet = isTablet,
+        onSupportersContributorsClick = onSupportersContributorsClick,
+        onLicensesAttributionsClick = onLicensesAttributionsClick,
+        onCheckForUpdatesClick = onCheckForUpdatesClick,
+        onTestUpdateBannerClick = onTestUpdateBannerClick,
+        showSupportersContributorsPage = showSupportersContributorsPage,
+    )
+    settingsFooterContent(isTablet)
+}
+
+/** The "Sobre" card, shared by the About page and the settings home. */
+internal fun LazyListScope.aboutSettingsSection(
+    isTablet: Boolean,
+    onSupportersContributorsClick: () -> Unit,
+    onLicensesAttributionsClick: () -> Unit,
+    onCheckForUpdatesClick: (() -> Unit)?,
+    onTestUpdateBannerClick: (() -> Unit)?,
+    showSupportersContributorsPage: Boolean,
+) {
+    item(key = "settings-about") {
         val uriHandler = LocalUriHandler.current
         SettingsSection(
             title = stringResource(Res.string.compose_settings_root_about_section),
@@ -99,7 +119,6 @@ internal fun LazyListScope.aboutSettingsContent(
             }
         }
     }
-    settingsFooterContent(isTablet)
 }
 
 internal fun LazyListScope.settingsFooterContent(isTablet: Boolean) {

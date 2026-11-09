@@ -88,10 +88,10 @@ internal fun settingsSearchEntries(
     switchProfileAvailable: Boolean,
     checkForUpdatesAvailable: Boolean,
 ): List<SettingsSearchEntry> {
-    val accountCategory = stringResource(SettingsCategory.You.labelRes)
-    val generalCategory = stringResource(SettingsCategory.Look.labelRes)
-    val aboutCategory = stringResource(SettingsCategory.System.labelRes)
-    val advancedCategory = stringResource(SettingsCategory.System.labelRes)
+    val accountCategory = stringResource(SettingsCategory.Account.labelRes)
+    val generalCategory = stringResource(SettingsCategory.General.labelRes)
+    val aboutCategory = stringResource(SettingsCategory.About.labelRes)
+    val advancedCategory = stringResource(SettingsCategory.Advanced.labelRes)
 
     val accountPage = stringResource(Res.string.compose_settings_page_account)
     val trackingPage = stringResource(Res.string.compose_settings_page_tracking)

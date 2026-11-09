@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.RoundedCorner
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.VideoSettings
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -35,15 +36,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import nuvio.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 
+/** Same four groups as the WATCHFIRST Windows app sidebar. */
 internal enum class SettingsCategory(
     val labelRes: StringResource,
     val icon: ImageVector,
 ) {
-    You(Res.string.settings_group_you, Icons.Default.Person),
-    Look(Res.string.settings_group_look, Icons.Default.Palette),
-    Watch(Res.string.settings_group_watch, Icons.Rounded.PlayArrow),
-    Services(Res.string.settings_group_services, Icons.Default.Link),
-    System(Res.string.settings_group_system, Icons.Rounded.Settings),
+    Account(Res.string.compose_settings_page_account, Icons.Default.Person),
+    General(Res.string.compose_settings_category_general, Icons.Rounded.Settings),
+    About(Res.string.compose_settings_category_about, Icons.Default.Info),
+    Advanced(Res.string.compose_settings_page_advanced, Icons.Default.Tune),
 }
 
 internal enum class SettingsPage(
@@ -53,177 +54,177 @@ internal enum class SettingsPage(
 ) {
     Root(
         titleRes = Res.string.compose_settings_page_root,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = null,
     ),
     Layout(
         titleRes = Res.string.compose_settings_page_layout,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
     About(
         titleRes = Res.string.compose_settings_category_about,
-        category = SettingsCategory.System,
+        category = SettingsCategory.About,
         parentPage = Root,
     ),
     Account(
         titleRes = Res.string.compose_settings_page_account,
-        category = SettingsCategory.You,
+        category = SettingsCategory.Account,
         parentPage = Root,
     ),
     SupportersContributors(
         titleRes = Res.string.compose_settings_page_supporters_contributors,
-        category = SettingsCategory.System,
+        category = SettingsCategory.About,
         parentPage = About,
     ),
     LicensesAttributions(
         titleRes = Res.string.compose_settings_page_licenses_attributions,
-        category = SettingsCategory.System,
+        category = SettingsCategory.About,
         parentPage = About,
     ),
     Playback(
         titleRes = Res.string.compose_settings_page_playback,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
     PlaybackPlayer(
         titleRes = Res.string.settings_playback_page_player,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackStreamSelection(
         titleRes = Res.string.settings_playback_page_stream_selection,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackUpNext(
         titleRes = Res.string.settings_playback_page_up_next,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackSkipSegments(
         titleRes = Res.string.settings_playback_page_skip,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackInterface(
         titleRes = Res.string.settings_playback_page_interface,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackAudio(
         titleRes = Res.string.settings_playback_page_audio,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackSubtitles(
         titleRes = Res.string.settings_playback_page_subtitles,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackVideo(
         titleRes = Res.string.settings_playback_page_video,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackBuffer(
         titleRes = Res.string.settings_playback_page_buffer,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     PlaybackP2p(
         titleRes = Res.string.settings_playback_page_p2p,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Playback,
     ),
     Appearance(
         titleRes = Res.string.settings_appearance_title,
-        category = SettingsCategory.Look,
-        parentPage = Root,
+        category = SettingsCategory.General,
+        parentPage = Layout,
     ),
     Streams(
         titleRes = Res.string.compose_settings_page_streams,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Layout,
     ),
     Advanced(
         titleRes = Res.string.compose_settings_page_advanced,
-        category = SettingsCategory.System,
+        category = SettingsCategory.Advanced,
         parentPage = Root,
     ),
     Notifications(
         titleRes = Res.string.compose_settings_page_notifications,
-        category = SettingsCategory.System,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
     ContinueWatching(
         titleRes = Res.string.compose_settings_page_continue_watching,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Layout,
     ),
     PosterCustomization(
         titleRes = Res.string.compose_settings_page_poster_customization,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Layout,
     ),
     ContentDiscovery(
         titleRes = Res.string.compose_settings_page_content_discovery,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
     Addons(
         titleRes = Res.string.compose_settings_page_addons,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = ContentDiscovery,
     ),
     Plugins(
         titleRes = Res.string.compose_settings_page_plugins,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = ContentDiscovery,
     ),
     MediaServers(
         titleRes = Res.string.compose_settings_page_media_servers,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = ContentDiscovery,
     ),
     MediaServer(
         titleRes = Res.string.compose_settings_page_media_server,
-        category = SettingsCategory.Watch,
+        category = SettingsCategory.General,
         parentPage = MediaServers,
     ),
     Homescreen(
         titleRes = Res.string.compose_settings_page_homescreen,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Layout,
     ),
     MetaScreen(
         titleRes = Res.string.compose_settings_page_meta_screen,
-        category = SettingsCategory.Look,
+        category = SettingsCategory.General,
         parentPage = Layout,
     ),
     Integrations(
         titleRes = Res.string.compose_settings_page_integrations,
-        category = SettingsCategory.Services,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
     TmdbEnrichment(
         titleRes = Res.string.compose_settings_page_tmdb_enrichment,
-        category = SettingsCategory.Services,
+        category = SettingsCategory.General,
         parentPage = Integrations,
     ),
     MdbListRatings(
         titleRes = Res.string.compose_settings_page_mdblist_ratings,
-        category = SettingsCategory.Services,
+        category = SettingsCategory.General,
         parentPage = Integrations,
     ),
     Debrid(
         titleRes = Res.string.compose_settings_page_debrid,
-        category = SettingsCategory.Services,
+        category = SettingsCategory.General,
         parentPage = Integrations,
     ),
     TraktAuthentication(
         titleRes = Res.string.compose_settings_page_tracking,
-        category = SettingsCategory.Services,
+        category = SettingsCategory.General,
         parentPage = Root,
     ),
 }
@@ -234,10 +235,9 @@ internal val SettingsPage.opensInlineOnTablet: Boolean
 internal fun SettingsPage.previousPage(): SettingsPage? = parentPage
 
 internal fun settingsCategoryForName(name: String): SettingsCategory = when (name) {
-    "Account" -> SettingsCategory.You
-    "General" -> SettingsCategory.Look
-    "About", "Advanced" -> SettingsCategory.System
-    else -> SettingsCategory.entries.firstOrNull { it.name == name } ?: SettingsCategory.Look
+    "You" -> SettingsCategory.Account
+    "System" -> SettingsCategory.Advanced
+    else -> SettingsCategory.entries.firstOrNull { it.name == name } ?: SettingsCategory.General
 }
 
 internal val SettingsPage.icon: ImageVector

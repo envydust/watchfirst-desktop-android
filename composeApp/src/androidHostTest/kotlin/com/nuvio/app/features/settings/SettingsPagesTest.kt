@@ -57,7 +57,7 @@ class SettingsPagesTest {
     }
 
     @Test
-    fun phoneRootRoutesLayoutAndPlayback() {
+    fun phoneRootFollowsThePcSections() {
         var opened: SettingsPage? = null
         compose.setContent {
             NuvioTheme {
@@ -70,28 +70,30 @@ class SettingsPagesTest {
         assertEquals(SettingsPage.Layout, opened)
         compose.onNodeWithText("Playback").performScrollTo().performClick()
         assertEquals(SettingsPage.Playback, opened)
-        compose.onNodeWithText("Tracking").performScrollTo().performClick()
-        assertEquals(SettingsPage.TraktAuthentication, opened)
+        compose.onNodeWithText("Advanced").performScrollTo().performClick()
+        assertEquals(SettingsPage.Advanced, opened)
+        compose.onNodeWithText("Tracking").assertDoesNotExist()
+        compose.onNodeWithText("Integrations").assertDoesNotExist()
     }
 
     @Test
-    fun tabletServicesGroupContainsIntegrationsAndTracking() {
+    fun tabletAdvancedGroupShowsOnlyAdvanced() {
         var opened: SettingsPage? = null
         compose.setContent {
             NuvioTheme {
                 LazyColumn(Modifier.fillMaxSize()) {
                     settingsRootContent(
                         isTablet = true,
-                        category = SettingsCategory.Services,
+                        category = SettingsCategory.Advanced,
                         onPageClick = { opened = it },
                     )
                 }
             }
         }
-        compose.onNodeWithText("Integrations").assertIsDisplayed()
-        compose.onNodeWithText("Tracking").performClick()
-        assertEquals(SettingsPage.TraktAuthentication, opened)
-        compose.onNodeWithText("Appearance").assertDoesNotExist()
+        compose.onNodeWithText("Advanced").assertIsDisplayed()
+        compose.onNodeWithText("Advanced").performClick()
+        assertEquals(SettingsPage.Advanced, opened)
+        compose.onNodeWithText("Layout").assertDoesNotExist()
         compose.onNodeWithText("Playback").assertDoesNotExist()
     }
 

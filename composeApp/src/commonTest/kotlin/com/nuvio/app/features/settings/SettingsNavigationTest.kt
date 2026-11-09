@@ -17,16 +17,17 @@ class SettingsNavigationTest {
             SettingsPage.Streams,
         ).forEach { page ->
             assertEquals(SettingsPage.Layout, page.previousPage())
-            assertEquals(SettingsCategory.Look, page.category)
+            assertEquals(SettingsCategory.General, page.category)
         }
         assertEquals(SettingsPage.Root, SettingsPage.Layout.previousPage())
+        assertEquals(SettingsPage.Layout, SettingsPage.Appearance.previousPage())
     }
 
     @Test
-    fun playbackChildrenReturnToPlaybackInTheWatchGroup() {
+    fun playbackChildrenReturnToPlaybackInTheGeneralGroup() {
         PlaybackSection.entries.forEach { section ->
             assertEquals(SettingsPage.Playback, section.page.previousPage())
-            assertEquals(SettingsCategory.Watch, section.page.category)
+            assertEquals(SettingsCategory.General, section.page.category)
         }
         assertEquals(SettingsPage.Root, SettingsPage.Playback.previousPage())
     }
@@ -47,12 +48,22 @@ class SettingsNavigationTest {
     }
 
     @Test
-    fun oldTabletCategoriesRestoreToTheirNewGroups() {
-        assertEquals(SettingsCategory.You, settingsCategoryForName("Account"))
-        assertEquals(SettingsCategory.Look, settingsCategoryForName("General"))
-        assertEquals(SettingsCategory.System, settingsCategoryForName("About"))
-        assertEquals(SettingsCategory.System, settingsCategoryForName("Advanced"))
-        assertEquals(SettingsCategory.Services, settingsCategoryForName("Services"))
-        assertEquals(SettingsCategory.Look, settingsCategoryForName("unknown"))
+    fun savedTabletCategoriesRestoreToThePcGroups() {
+        assertEquals(SettingsCategory.Account, settingsCategoryForName("Account"))
+        assertEquals(SettingsCategory.General, settingsCategoryForName("General"))
+        assertEquals(SettingsCategory.About, settingsCategoryForName("About"))
+        assertEquals(SettingsCategory.Advanced, settingsCategoryForName("Advanced"))
+        assertEquals(SettingsCategory.Account, settingsCategoryForName("You"))
+        assertEquals(SettingsCategory.General, settingsCategoryForName("Look"))
+        assertEquals(SettingsCategory.General, settingsCategoryForName("Services"))
+        assertEquals(SettingsCategory.Advanced, settingsCategoryForName("System"))
+        assertEquals(SettingsCategory.General, settingsCategoryForName("unknown"))
+    }
+
+    @Test
+    fun aboutPagesStayInTheAboutGroup() {
+        assertEquals(SettingsCategory.About, SettingsPage.About.category)
+        assertEquals(SettingsCategory.About, SettingsPage.LicensesAttributions.category)
+        assertEquals(SettingsCategory.Advanced, SettingsPage.Advanced.category)
     }
 }
