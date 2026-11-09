@@ -88,10 +88,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.collect.outputs.version }}
         run: |
-          TAG="android-v${VERSION}-${GITHUB_SHA::7}"
+          if [ "$SIGNED" = "true" ]; then KIND=release; else KIND=debug; fi
+          TAG="android-v${VERSION}-${GITHUB_SHA::7}-${KIND}-r${GITHUB_RUN_NUMBER}"
           cd "$RUNNER_TEMP/apk"
           gh release create "$TAG" *.apk SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
-            --title "WATCHFIRST Android ${VERSION} (${GITHUB_REF_NAME})" \
-            --notes "Build automático do WATCHFIRST para Android. Commit: ${GITHUB_SHA}. Execução: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256 de cada APK em SHA256SUMS.txt."
+            --title "WATCHFIRST Android ${VERSION} ${KIND} (${GITHUB_REF_NAME})" \
+            --notes "Build automático do WATCHFIRST para Android (${KIND}). Para membros, use o APK universal; os demais são por tipo de processador (arm64-v8a serve na maioria dos celulares). Commit: ${GITHUB_SHA}. Execução: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256 de cada APK em SHA256SUMS.txt."
           echo "Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}" >> "$GITHUB_STEP_SUMMARY"
