@@ -23,6 +23,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.nuvio.app.core.ui.WatchfirstSearchField
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.runtime.derivedStateOf
@@ -95,6 +99,7 @@ fun SearchScreen(
     onPosterLongClick: ((MetaPreview) -> Unit)? = null,
     searchFocusRequestCount: Int = 0,
     scrollToTopRequests: Flow<Unit> = emptyFlow(),
+    onLiveChannelPlay: ((MetaPreview) -> Unit)? = null,
 ) {
     val focusRequester = remember { FocusRequester() }
     var isSearchFocused by remember { mutableStateOf(false) }
@@ -129,14 +134,22 @@ fun SearchScreen(
     val watchedUiState by WatchedRepository.uiState.collectAsStateWithLifecycle()
     val fullyWatchedSeriesKeys by WatchedRepository.fullyWatchedSeriesKeys.collectAsStateWithLifecycle()
     val networkStatusUiState by NetworkStatusRepository.uiState.collectAsStateWithLifecycle()
+    val homeUiState by com.nuvio.app.features.home.HomeRepository.uiState.collectAsStateWithLifecycle()
+    val accessState by com.nuvio.app.features.access.WatchfirstAccess.state.collectAsStateWithLifecycle()
+    val liveState by com.nuvio.app.features.livetv.LiveTvRepository.state.collectAsStateWithLifecycle()
+    val trendingTitles = remember(homeUiState.heroItems, homeUiState.sections) { trendingSearchTitles(homeUiState) }
+    // Live highlights for MAX members only, from the same channels as the TV ao vivo tab.
+    val liveHighlights = remember(accessState.liveTvEnabled, liveState.channels) {
+        if (accessState.liveTvEnabled) liveState.channels.take(12) else emptyList()
+    }
+    LaunchedEffect(accessState.liveTvEnabled, accessState.liveAddonUrls, addonsUiState.addons) {
+        if (accessState.liveTvEnabled) {
+            com.nuvio.app.features.livetv.LiveTvRepository.ensureLoaded(addonsUiState.addons, accessState.liveAddonUrls)
+        }
+    }
     var query by rememberSaveable { mutableStateOf("") }
     var lastRequestedQuery by rememberSaveable { mutableStateOf<String?>(null) }
     var observedOfflineState by remember { mutableStateOf(false) }
-    val discoverInFocus by remember(query, listState) {
-        derivedStateOf {
-            query.isBlank() && listState.firstVisibleItemIndex > 0
-        }
-    }
 
     ScreenActivityEffect(scrollToTopRequests) { screenActive ->
         if (!screenActive) return@ScreenActivityEffect
@@ -238,11 +251,9 @@ fun SearchScreen(
         val homeSectionPadding = remember(maxWidth) {
             homeSectionHorizontalPaddingForWidth(maxWidth.value)
         }
-        val headerTitle = when {
-            query.isNotBlank() -> stringResource(Res.string.compose_nav_search)
-            discoverInFocus -> stringResource(Res.string.compose_search_discover_title)
-            else -> stringResource(Res.string.compose_nav_search)
-        }
+        // Tablets draw the floating tab bar over the top centre; keep the field clear of it.
+        val tabletTopBar = maxWidth >= 768.dp
+        val tileWidth = if (maxWidth >= 600.dp) 264.dp else (maxWidth - 32.dp - 12.dp) / 2.15f
 
         NuvioScreen(
             horizontalPadding = 0.dp,
@@ -260,36 +271,22 @@ fun SearchScreen(
                 androidx.compose.foundation.layout.Column(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    NuvioScreenHeader(
-                        title = headerTitle,
-                        modifier = Modifier.padding(horizontal = 16.dp),
+                    // The field is the page title, as on Disney+.
+                    androidx.compose.foundation.layout.Spacer(
+                        modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars),
                     )
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(6.dp))
-                    androidx.compose.foundation.layout.Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        NuvioInputField(
-                            value = query,
-                            onValueChange = { query = it },
-                            placeholder = stringResource(Res.string.compose_search_placeholder),
-                            shape = RoundedCornerShape(NuvioTokens.Radius.xl),
-                            modifier = Modifier
-                                .focusRequester(focusRequester)
-                                .onFocusChanged { isSearchFocused = it.isFocused },
-                            trailingContent = if (query.isNotBlank()) {
-                                {
-                                    IconButton(onClick = { query = "" }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = stringResource(Res.string.compose_search_clear),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                }
-                            } else {
-                                null
-                            },
-                        )
-                    }
-                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(14.dp))
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(if (tabletTopBar) 72.dp else 12.dp))
+                    WatchfirstSearchField(
+                        value = query,
+                        onValueChange = { query = it },
+                        placeholder = "Pesquise por título, gênero...",
+                        clearLabel = stringResource(Res.string.compose_search_clear),
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        textFieldModifier = Modifier
+                            .focusRequester(focusRequester)
+                            .onFocusChanged { isSearchFocused = it.isFocused },
+                    )
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(18.dp))
                 }
             }
         }
@@ -297,10 +294,32 @@ fun SearchScreen(
         if (query.isBlank()) {
             if (isSearchFocused && recentSearches.isNotEmpty()) {
                 item(key = "recent_searches") {
-                    SearchRecentSection(
+                    SearchRecentChips(
                         recentSearches = recentSearches,
                         onSearchPress = { recentQuery -> query = recentQuery },
                         onRemoveSearch = SearchHistoryRepository::removeSearch,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+            }
+            if (trendingTitles.isNotEmpty()) {
+                item(key = "search_trending") {
+                    SearchTrendingRow(
+                        titles = trendingTitles,
+                        tileWidth = tileWidth,
+                        onPosterClick = onPosterClick,
+                        onPosterLongClick = onPosterLongClick,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+                }
+            }
+            if (liveHighlights.isNotEmpty()) {
+                item(key = "search_live") {
+                    SearchLiveHighlightsRow(
+                        channels = liveHighlights,
+                        tileWidth = tileWidth,
+                        onChannelClick = { channel -> onLiveChannelPlay?.invoke(channel.meta) },
+                        modifier = Modifier.padding(bottom = 12.dp),
                     )
                 }
             }
@@ -458,72 +477,4 @@ private fun SearchEmptyStateCard(
         },
         onActionClick = if (reason == SearchEmptyStateReason.RequestFailed) onRetry else null,
     )
-}
-
-@Composable
-private fun SearchRecentSection(
-    recentSearches: List<String>,
-    onSearchPress: (String) -> Unit,
-    onRemoveSearch: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            text = stringResource(Res.string.compose_search_recent_searches),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = MaterialTheme.colorScheme.onBackground,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        recentSearches.forEach { recentQuery ->
-            SearchRecentRow(
-                query = recentQuery,
-                onSearchPress = { onSearchPress(recentQuery) },
-                onRemovePress = { onRemoveSearch(recentQuery) },
-            )
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-    }
-}
-
-@Composable
-private fun SearchRecentRow(
-    query: String,
-    onSearchPress: () -> Unit,
-    onRemovePress: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onSearchPress)
-            .padding(vertical = 2.dp)
-            .background(
-                color = MaterialTheme.colorScheme.background,
-                shape = RoundedCornerShape(16.dp),
-            )
-            .padding(start = 2.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = query,
-            modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        IconButton(onClick = onRemovePress) {
-            Icon(
-                imageVector = Icons.Rounded.Close,
-                contentDescription = stringResource(Res.string.compose_search_remove_recent_search),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
 }

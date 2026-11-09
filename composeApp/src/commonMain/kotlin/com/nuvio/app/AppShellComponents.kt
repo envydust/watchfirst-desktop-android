@@ -165,6 +165,7 @@ internal fun AppTabHost(
                     onPosterLongClick = actions.onPosterLongClick,
                     searchFocusRequestCount = state.searchFocusRequestCount,
                     scrollToTopRequests = requests.searchScrollToTopRequests,
+                    onLiveChannelPlay = actions.onLiveChannelPlay,
                 )
             }
 

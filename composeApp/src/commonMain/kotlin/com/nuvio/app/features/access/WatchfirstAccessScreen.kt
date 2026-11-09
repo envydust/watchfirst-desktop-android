@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,7 +23,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -42,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -80,7 +77,6 @@ fun WatchfirstAccessScreen(modifier: Modifier = Modifier) {
     val state by WatchfirstAccess.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val focus = LocalFocusManager.current
-    val uri = LocalUriHandler.current
 
     var name by rememberSaveable { mutableStateOf(WatchfirstAccess.savedName) }
     var email by rememberSaveable { mutableStateOf(WatchfirstAccess.savedEmail) }
@@ -252,21 +248,7 @@ fun WatchfirstAccessScreen(modifier: Modifier = Modifier) {
                         Text("Alterar", color = GreenSoft)
                     }
                 }
-                Spacer(Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlinedButton(
-                        onClick = { uri.openUri(WATCHFIRST_BASIC_SITE) },
-                        shape = shape,
-                        border = BorderStroke(1.dp, Line),
-                        modifier = Modifier.weight(1f).height(46.dp),
-                    ) { Text("Abrir site Básico", color = TextMain, fontSize = 14.sp) }
-                    OutlinedButton(
-                        onClick = { uri.openUri(WATCHFIRST_MAX_SITE) },
-                        shape = shape,
-                        border = BorderStroke(1.dp, Line),
-                        modifier = Modifier.weight(1f).height(46.dp),
-                    ) { Text("Abrir site MAX", color = TextMain, fontSize = 14.sp) }
-                }
+                // No shortcut to the member sites: people open their plan's site on their own and get the code there.
                 Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = code,

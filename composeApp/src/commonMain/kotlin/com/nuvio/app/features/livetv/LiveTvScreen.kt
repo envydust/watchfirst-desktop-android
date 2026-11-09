@@ -22,10 +22,10 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.LiveTv
@@ -33,7 +33,6 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
-import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -54,7 +53,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,23 +61,22 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.nuvio.app.core.ui.NuvioInputField
 import com.nuvio.app.core.ui.NuvioScreen
 import com.nuvio.app.core.ui.NuvioScreenHeader
-import com.nuvio.app.core.ui.NuvioTokens
+import com.nuvio.app.core.ui.NuvioShelfSectionHeader
+import com.nuvio.app.core.ui.WatchfirstSearchField
 import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.features.access.WatchfirstAccess
 import com.nuvio.app.features.addons.AddonRepository
 import com.nuvio.app.features.home.MetaPreview
+import androidx.compose.ui.layout.ContentScale
 
-private val LiveRed = Color(0xFFE53935)
-private val FavoriteGold = Color(0xFFFFC107)
-private val CardGap = 12.dp
 private val ScreenGutter = 16.dp
+private val RowGap = 12.dp
 
 /**
- * "TV ao vivo" for MAX members, the same tab the WATCHFIRST PC app has: channels from the addons
- * the administrator marked as live, grouped by category, with search, addon filter and favorites.
+ * "TV ao vivo" for MAX members, the same tab the WATCHFIRST PC app has, laid out like Disney+ "Canais Ao Vivo":
+ * one row of tall, art-led channel cards per category, with search, addon filter and favorites.
  * These addons never show on the home screen.
  */
 @Composable
@@ -120,9 +117,7 @@ internal fun LiveTvScreen(
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize().background(colors.background)) {
-        val wide = maxWidth >= 600.dp
-        val cardMinWidth = if (wide) 200.dp else 150.dp
-        val columns = ((maxWidth - ScreenGutter * 2 + CardGap) / (cardMinWidth + CardGap)).toInt().coerceAtLeast(2)
+        val cardWidth = if (maxWidth >= 600.dp) 264.dp else (maxWidth - ScreenGutter * 2) * 0.62f
 
         NuvioScreen(horizontalPadding = 0.dp) {
             stickyHeader(key = "live-header") {
@@ -130,7 +125,7 @@ internal fun LiveTvScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(colors.background)
-                        .padding(bottom = 10.dp),
+                        .padding(bottom = 12.dp),
                 ) {
                     NuvioScreenHeader(
                         title = "TV ao vivo",
@@ -154,24 +149,15 @@ internal fun LiveTvScreen(
                         onListModeChange = { listMode = it },
                         modifier = Modifier.padding(horizontal = ScreenGutter),
                     )
-                    Spacer(Modifier.height(10.dp))
-                    NuvioInputField(
+                    Spacer(Modifier.height(4.dp))
+                    WatchfirstSearchField(
                         value = query,
                         onValueChange = { query = it.take(80) },
-                        placeholder = "Buscar canais...",
-                        shape = RoundedCornerShape(NuvioTokens.Radius.xl),
+                        placeholder = "Buscar canal ou categoria",
+                        fontSize = 18.sp,
                         modifier = Modifier.padding(horizontal = ScreenGutter),
-                        trailingContent = if (query.isNotBlank()) {
-                            {
-                                IconButton(onClick = { query = "" }) {
-                                    Icon(Icons.Rounded.Close, contentDescription = "Limpar busca", tint = colors.textSecondary)
-                                }
-                            }
-                        } else {
-                            null
-                        },
                     )
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(14.dp))
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(horizontal = ScreenGutter),
@@ -180,7 +166,11 @@ internal fun LiveTvScreen(
                             LiveFilterChip("Todos", filter == LiveTvFilter.All) { filter = LiveTvFilter.All }
                         }
                         item(key = "favorites") {
-                            LiveFilterChip("★ Favoritos", filter == LiveTvFilter.Favorites) { filter = LiveTvFilter.Favorites }
+                            LiveFilterChip(
+                                label = "Favoritos",
+                                selected = filter == LiveTvFilter.Favorites,
+                                icon = Icons.Rounded.Star,
+                            ) { filter = LiveTvFilter.Favorites }
                         }
                         items(state.addonNames, key = { "addon:$it" }) { name ->
                             LiveFilterChip(name, filter == LiveTvFilter.Addon(name)) { filter = LiveTvFilter.Addon(name) }
@@ -197,9 +187,7 @@ internal fun LiveTvScreen(
                     )
                 }
                 !state.loaded && state.channels.isEmpty() -> item(key = "loading") {
-                    Box(Modifier.fillMaxWidth().heightIn(min = 240.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = colors.accent)
-                    }
+                    LiveRowsSkeleton(cardWidth = cardWidth)
                 }
                 state.channels.isEmpty() -> item(key = "failed") {
                     LiveTvMessage(
@@ -214,37 +202,46 @@ internal fun LiveTvScreen(
                         text = if (noFavorites) "Toque na estrela de um canal para adicioná-lo aos favoritos." else "Tente buscar por outro nome.",
                     )
                 }
-                else -> visible.forEach { group ->
+                listMode -> visible.forEach { group ->
                     item(key = "header:" + group.category) {
-                        CategoryHeader(group.category, group.channels.size, Modifier.padding(horizontal = ScreenGutter))
+                        NuvioShelfSectionHeader(
+                            title = group.category,
+                            modifier = Modifier.padding(start = ScreenGutter, end = ScreenGutter, top = 10.dp),
+                        )
                     }
-                    if (listMode) {
-                        items(group.channels, key = { "row:" + group.category + ":" + it.manifestUrl + it.favoriteKey }) { channel ->
-                            ChannelRow(
-                                channel = channel,
-                                favorite = channel.favoriteKey in favorites,
-                                onClick = { selected = channel },
-                                onToggleFavorite = { toggleFavorite(channel) },
+                    items(group.channels, key = { "row:" + group.category + ":" + it.manifestUrl + it.favoriteKey }) { channel ->
+                        ChannelRow(
+                            channel = channel,
+                            favorite = channel.favoriteKey in favorites,
+                            onClick = { selected = channel },
+                            onToggleFavorite = { toggleFavorite(channel) },
+                            modifier = Modifier.padding(horizontal = ScreenGutter),
+                        )
+                    }
+                }
+                else -> visible.forEach { group ->
+                    item(key = "shelf:" + group.category) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            NuvioShelfSectionHeader(
+                                title = group.category,
                                 modifier = Modifier.padding(horizontal = ScreenGutter),
                             )
-                        }
-                    } else {
-                        val rows = group.channels.chunked(columns)
-                        items(rows.size, key = { "cards:" + group.category + ":" + it }) { index ->
-                            Row(
-                                modifier = Modifier.padding(horizontal = ScreenGutter),
-                                horizontalArrangement = Arrangement.spacedBy(CardGap),
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(RowGap),
+                                contentPadding = PaddingValues(horizontal = ScreenGutter),
                             ) {
-                                rows[index].forEach { channel ->
-                                    ChannelCard(
+                                items(group.channels, key = { it.manifestUrl + "|" + it.favoriteKey }) { channel ->
+                                    LiveChannelCard(
                                         channel = channel,
-                                        favorite = channel.favoriteKey in favorites,
                                         onClick = { selected = channel },
+                                        favorite = channel.favoriteKey in favorites,
                                         onToggleFavorite = { toggleFavorite(channel) },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.width(cardWidth),
                                     )
                                 }
-                                repeat(columns - rows[index].size) { Spacer(Modifier.weight(1f)) }
                             }
                         }
                     }
@@ -304,21 +301,6 @@ private fun LiveTvSummary(
 }
 
 @Composable
-private fun LiveBadge() {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(6.dp))
-            .background(LiveRed)
-            .padding(horizontal = 7.dp, vertical = 3.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(6.dp).clip(CircleShape).background(Color.White))
-        Spacer(Modifier.width(5.dp))
-        Text("AO VIVO", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
 private fun ViewModeToggle(listMode: Boolean, onChange: (Boolean) -> Unit) {
     val colors = MaterialTheme.nuvio.colors
     Row(
@@ -329,7 +311,7 @@ private fun ViewModeToggle(listMode: Boolean, onChange: (Boolean) -> Unit) {
             .padding(3.dp),
     ) {
         ToggleOption("Cartões", Icons.Rounded.GridView, selected = !listMode) { onChange(false) }
-        ToggleOption("Lista", Icons.Rounded.ViewList, selected = listMode) { onChange(true) }
+        ToggleOption("Lista", Icons.AutoMirrored.Rounded.ViewList, selected = listMode) { onChange(true) }
     }
 }
 
@@ -338,7 +320,7 @@ private fun ToggleOption(label: String, icon: ImageVector, selected: Boolean, on
     val colors = MaterialTheme.nuvio.colors
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(40.dp)
             .clip(RoundedCornerShape(9.dp))
             .background(if (selected) colors.textPrimary else Color.Transparent)
             .clickable(onClick = onClick),
@@ -354,117 +336,79 @@ private fun ToggleOption(label: String, icon: ImageVector, selected: Boolean, on
 }
 
 @Composable
-private fun LiveFilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun LiveFilterChip(
+    label: String,
+    selected: Boolean,
+    icon: ImageVector? = null,
+    onClick: () -> Unit,
+) {
     val colors = MaterialTheme.nuvio.colors
-    Text(
-        text = label,
-        color = if (selected) colors.background else colors.textPrimary,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.SemiBold,
-        maxLines = 1,
+    val shape = RoundedCornerShape(20.dp)
+    Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
+            .heightIn(min = 40.dp)
+            .clip(shape)
             .background(if (selected) colors.textPrimary else colors.surfaceCard)
-            .border(1.dp, if (selected) Color.Transparent else colors.borderSubtle, RoundedCornerShape(10.dp))
+            .border(1.dp, if (selected) Color.Transparent else colors.borderSubtle, shape)
             .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
-    )
-}
-
-@Composable
-private fun CategoryHeader(title: String, count: Int, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.nuvio.colors
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier.padding(top = 8.dp)) {
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (selected) colors.background else FavoriteGold,
+                modifier = Modifier.size(16.dp),
+            )
+        }
         Text(
-            title,
-            color = colors.textPrimary,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false),
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            count.toString(),
-            color = colors.textSecondary,
-            fontSize = 12.sp,
+            text = label,
+            color = if (selected) colors.background else colors.textPrimary,
+            fontSize = 13.sp,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .background(colors.surfaceCard)
-                .padding(horizontal = 8.dp, vertical = 2.dp),
+            maxLines = 1,
         )
     }
 }
 
 @Composable
-private fun ChannelImage(channel: LiveChannel, modifier: Modifier = Modifier) {
+private fun LiveRowsSkeleton(cardWidth: androidx.compose.ui.unit.Dp) {
+    val colors = MaterialTheme.nuvio.colors
+    Column(modifier = Modifier.fillMaxWidth().padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Box(
+            Modifier.padding(horizontal = ScreenGutter).width(140.dp).height(20.dp)
+                .clip(RoundedCornerShape(6.dp)).background(colors.surfaceCard),
+        )
+        Row(
+            modifier = Modifier.padding(horizontal = ScreenGutter),
+            horizontalArrangement = Arrangement.spacedBy(RowGap),
+        ) {
+            repeat(2) {
+                Box(
+                    Modifier.width(cardWidth).aspectRatio(0.96f)
+                        .clip(RoundedCornerShape(12.dp)).background(colors.surfaceCard),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChannelThumb(channel: LiveChannel, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.nuvio.colors
     Box(modifier = modifier.background(colors.surface), contentAlignment = Alignment.Center) {
         val url = channel.imageUrl
         if (url.isNullOrBlank()) {
-            Text(
-                channel.meta.name.take(2).uppercase(),
-                color = colors.textSecondary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-            )
+            Text(channel.meta.name.take(2).uppercase(), color = colors.textSecondary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         } else {
             AsyncImage(
                 model = url,
                 contentDescription = channel.meta.name,
                 contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize().padding(10.dp),
+                modifier = Modifier.fillMaxSize().padding(8.dp),
             )
-        }
-    }
-}
-
-@Composable
-private fun FavoriteButton(favorite: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.nuvio.colors
-    Box(
-        modifier = modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(Color.Black.copy(alpha = 0.55f))
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        Icon(
-            imageVector = if (favorite) Icons.Rounded.Star else Icons.Rounded.StarBorder,
-            contentDescription = if (favorite) "Remover dos favoritos" else "Adicionar aos favoritos",
-            tint = if (favorite) FavoriteGold else colors.textPrimary,
-            modifier = Modifier.size(17.dp),
-        )
-    }
-}
-
-@Composable
-private fun ChannelCard(
-    channel: LiveChannel,
-    favorite: Boolean,
-    onClick: () -> Unit,
-    onToggleFavorite: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val colors = MaterialTheme.nuvio.colors
-    val shape = RoundedCornerShape(14.dp)
-    Column(
-        modifier = modifier
-            .clip(shape)
-            .background(colors.surfaceCard)
-            .border(1.dp, colors.borderSubtle, shape)
-            .clickable(onClick = onClick),
-    ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
-            ChannelImage(channel, Modifier.fillMaxSize())
-            FavoriteButton(favorite, onToggleFavorite, Modifier.align(Alignment.TopEnd).padding(6.dp))
-        }
-        Column(Modifier.padding(horizontal = 10.dp, vertical = 9.dp)) {
-            Text(channel.meta.name, color = colors.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(channel.addonName, color = colors.textSecondary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -489,13 +433,19 @@ private fun ChannelRow(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ChannelImage(channel, Modifier.width(88.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(8.dp)))
+        ChannelThumb(channel, Modifier.width(96.dp).aspectRatio(16f / 9f).clip(RoundedCornerShape(8.dp)))
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(channel.meta.name, color = colors.textPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("${channel.addonName} • ${channel.category}", color = colors.textSecondary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(channel.meta.name, color = colors.textPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(channel.subtitle, color = colors.textSecondary, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        FavoriteButton(favorite, onToggleFavorite)
+        IconButton(onClick = onToggleFavorite) {
+            Icon(
+                imageVector = if (favorite) Icons.Rounded.Star else Icons.Rounded.StarBorder,
+                contentDescription = if (favorite) "Remover dos favoritos" else "Adicionar aos favoritos",
+                tint = if (favorite) FavoriteGold else colors.textSecondary,
+            )
+        }
     }
 }
 
@@ -518,22 +468,19 @@ private fun ChannelPanel(
             .padding(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            LiveBadge()
-            Spacer(Modifier.width(8.dp))
-            Text("Canal selecionado", color = colors.textSecondary, fontSize = 13.sp)
-            Spacer(Modifier.weight(1f))
+            Text("Canal selecionado", color = colors.textSecondary, fontSize = 13.sp, modifier = Modifier.weight(1f))
             IconButton(onClick = onClose) {
                 Icon(Icons.Rounded.Close, contentDescription = "Fechar", tint = colors.textPrimary)
             }
         }
-        Spacer(Modifier.height(4.dp))
-        ChannelImage(channel, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(14.dp)))
-        Spacer(Modifier.height(14.dp))
-        Text(channel.meta.name, color = colors.textPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text("${channel.addonName} • ${channel.category}", color = colors.textSecondary, fontSize = 13.sp)
+        LiveChannelCard(
+            channel = channel,
+            onClick = onPlay,
+            modifier = Modifier.fillMaxWidth(),
+        )
         val description = channel.meta.description?.trim().orEmpty()
         if (description.isNotEmpty()) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
                 Text(description, color = colors.textSecondary, fontSize = 13.sp)
             }
@@ -543,7 +490,7 @@ private fun ChannelPanel(
             onClick = onPlay,
             colors = ButtonDefaults.buttonColors(containerColor = colors.accent, contentColor = colors.onAccent),
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            modifier = Modifier.fillMaxWidth().height(52.dp),
         ) {
             Icon(Icons.Rounded.PlayArrow, contentDescription = null)
             Spacer(Modifier.width(8.dp))
@@ -553,7 +500,7 @@ private fun ChannelPanel(
         OutlinedButton(
             onClick = onToggleFavorite,
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth().height(44.dp),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
         ) {
             Icon(
                 imageVector = if (favorite) Icons.Rounded.Star else Icons.Rounded.StarBorder,

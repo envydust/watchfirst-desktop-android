@@ -152,7 +152,8 @@ fun LibraryScreen(
     var sourceModeName by rememberSaveable { mutableStateOf(LibraryViewMode.Saved.name) }
     val sourceMode = remember(sourceModeName, hasServers) {
         runCatching { LibraryViewMode.valueOf(sourceModeName) }.getOrDefault(LibraryViewMode.Saved)
-            .takeUnless { it == LibraryViewMode.Servers && !hasServers }
+            // WATCHFIRST mobile has no cloud library: a saved "Cloud" selection falls back to Saved.
+            .takeUnless { (it == LibraryViewMode.Servers && !hasServers) || it == LibraryViewMode.Cloud }
             ?: LibraryViewMode.Saved
     }
     var serverShelves by remember { mutableStateOf<List<LibraryServerShelf>?>(null) }
@@ -370,14 +371,17 @@ fun LibraryScreen(
                                 }
                             },
                         )
-                        LibrarySourceSwitch(
-                            selectedMode = sourceMode,
-                            showServers = hasServers,
-                            onModeSelected = { mode ->
-                                sourceModeName = mode.name
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
+                        // Without the cloud tab, the switch only matters when media servers exist.
+                        if (hasServers) {
+                            LibrarySourceSwitch(
+                                selectedMode = sourceMode,
+                                showServers = hasServers,
+                                onModeSelected = { mode ->
+                                    sourceModeName = mode.name
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                     }
                 }
@@ -747,11 +751,6 @@ private fun LibrarySourceSwitch(
             label = stringResource(Res.string.library_source_saved),
             selected = selectedMode == LibraryViewMode.Saved,
             onClick = { onModeSelected(LibraryViewMode.Saved) },
-        )
-        LibraryChip(
-            label = stringResource(Res.string.library_source_cloud),
-            selected = selectedMode == LibraryViewMode.Cloud,
-            onClick = { onModeSelected(LibraryViewMode.Cloud) },
         )
         if (showServers) {
             LibraryChip(

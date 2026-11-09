@@ -121,11 +121,10 @@ internal fun LazyListScope.discoverContent(
 
 @Composable
 private fun DiscoverSectionHeader(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(Res.string.compose_search_discover_title),
+    // Same row header as every shelf (green bar), so Descobrir reads as the next row, not a new page.
+    com.nuvio.app.core.ui.NuvioShelfSectionHeader(
+        title = stringResource(Res.string.compose_search_discover_title),
         modifier = modifier,
-        style = MaterialTheme.typography.displaySmall,
-        color = MaterialTheme.colorScheme.onBackground,
     )
 }
 

@@ -39,8 +39,6 @@ import kotlinx.serialization.json.put
 
 /** Same service and origin the WATCHFIRST Windows app uses. */
 internal const val WATCHFIRST_ORIGIN = "https://membros.watchfirst.com.br"
-internal const val WATCHFIRST_BASIC_SITE = "https://membros.watchfirst.com.br"
-internal const val WATCHFIRST_MAX_SITE = "https://max.watchfirst.com.br"
 
 private const val LIFETIME = 253402300799000L
 private const val KEY_PLAN = "plan"
