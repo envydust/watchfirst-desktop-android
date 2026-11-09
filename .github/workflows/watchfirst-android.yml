@@ -24,48 +24,45 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Local configuration (no secrets written to disk beyond this file)
+      - name: Write local configuration
         env:
           SUPABASE_URL: ${{ secrets.NUVIO_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.NUVIO_SUPABASE_ANON_KEY }}
           SUPABASE_FALLBACK_URL: ${{ secrets.NUVIO_SUPABASE_FALLBACK_URL }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-        run: |
-          cat > local.properties <<EOF
-          sdk.dir=$ANDROID_HOME
-          NUVIO_ANDROID_DISTRIBUTION=full
-          NUVIO_SUPABASE_URL=$SUPABASE_URL
-          NUVIO_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY
-          NUVIO_SUPABASE_FALLBACK_URL=$SUPABASE_FALLBACK_URL
-          TMDB_API_KEY=$TMDB_API_KEY
-          EOF
-
-      - name: Decode release keystore (optional)
-        id: keystore
-        env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_B64" ]; then
+          {
+            echo "sdk.dir=$ANDROID_HOME"
+            echo "NUVIO_ANDROID_DISTRIBUTION=full"
+            echo "NUVIO_SUPABASE_URL=$SUPABASE_URL"
+            echo "NUVIO_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "NUVIO_SUPABASE_FALLBACK_URL=$SUPABASE_FALLBACK_URL"
+            echo "TMDB_API_KEY=$TMDB_API_KEY"
+          } > local.properties
+          if [ -n "$KEYSTORE_B64" ] && [ -n "$KEYSTORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "available=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "NUVIO_RELEASE_STORE_FILE=$RUNNER_TEMP/release.jks"
+              echo "NUVIO_RELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "NUVIO_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+              echo "NUVIO_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+            } >> local.properties
+            echo "SIGNED=true" >> "$GITHUB_ENV"
           else
-            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "SIGNED=false" >> "$GITHUB_ENV"
           fi
 
       - name: Build APK
-        env:
-          ORG_GRADLE_PROJECT_nuvio.app.versionName: ''
-          RELEASE_KEYSTORE: ${{ steps.keystore.outputs.available == 'true' && format('{0}/release.jks', runner.temp) || '' }}
-          RELEASE_STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ "${{ steps.keystore.outputs.available }}" = "true" ]; then
-            TASK=":androidApp:assembleFullRelease"
+          if [ "$SIGNED" = "true" ]; then
+            ./gradlew :androidApp:assembleFullRelease --no-daemon --stacktrace
           else
-            TASK=":androidApp:assembleFullDebug"
+            ./gradlew :androidApp:assembleFullDebug --no-daemon --stacktrace
           fi
-          ./gradlew $TASK --no-daemon --stacktrace
 
       - name: Collect APKs and checksums
         id: collect
@@ -75,7 +72,7 @@ jobs:
           cd "$RUNNER_TEMP/apk"
           test -n "$(ls *.apk 2>/dev/null)" || { echo "nenhum APK gerado"; exit 1; }
           sha256sum *.apk > SHA256SUMS.txt
-          VERSION=$(sed -n "s/^MARKETING_VERSION=//p" "$GITHUB_WORKSPACE/iosApp/Configuration/Version.xcconfig" | tr -d " ")
+          VERSION=$(sed -n "s/^MARKETING_VERSION=//p" "$GITHUB_WORKSPACE/iosApp/Configuration/Version.xcconfig" | tr -d " \r")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           ls -la
 
@@ -89,5 +86,5 @@ jobs:
           gh release create "$TAG" *.apk SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "WATCHFIRST Android ${VERSION} (${GITHUB_REF_NAME})" \
-            --notes "Build automático do WATCHFIRST para Android. Commit: ${GITHUB_SHA}. Execução: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Cada APK traz o SHA-256 em SHA256SUMS.txt."
+            --notes "Build automático do WATCHFIRST para Android. Commit: ${GITHUB_SHA}. Execução: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. SHA-256 de cada APK em SHA256SUMS.txt."
           echo "Release: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/${TAG}" >> "$GITHUB_STEP_SUMMARY"
