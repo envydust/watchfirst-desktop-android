@@ -161,16 +161,18 @@ object ThemeColors {
     )
 
     val White = ThemeColorPalette(
-        secondary = Color(0xFF24FF00),
-        secondaryVariant = Color(0xFF1DE600),
-        nativeAccentHex = "#24FF00",
-        onSecondary = Color(0xFF000000),
-        onSecondaryVariant = Color(0xFF000000),
-        focusRing = Color(0xFF24FF00),
-        focusBackground = Color(0xFF0F2B0B),
-        background = Color(0xFF050805),
-        backgroundElevated = Color(0xFF0E120E),
-        backgroundCard = Color(0xFF151A15),
+        // Same palette as the WATCHFIRST PC app.
+        secondary = Color(0xFF39FF14),
+        secondaryVariant = Color(0xFF20C987),
+        accentGradient = listOf(Color(0xFF39FF14), Color(0xFF20C987)),
+        nativeAccentHex = "#39FF14",
+        onSecondary = Color(0xFF071108),
+        onSecondaryVariant = Color(0xFF071108),
+        focusRing = Color(0xFF7CFF64),
+        focusBackground = Color(0xFF153523),
+        background = Color(0xFF080C10),
+        backgroundElevated = Color(0xFF111820),
+        backgroundCard = Color(0xFF17212B),
     )
 
     fun getColorPalette(

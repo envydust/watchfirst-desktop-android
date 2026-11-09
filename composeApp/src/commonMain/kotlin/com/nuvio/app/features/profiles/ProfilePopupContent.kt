@@ -1,5 +1,6 @@
 package com.nuvio.app.features.profiles
 
+import com.nuvio.app.core.performance.LocalLightMode
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -87,6 +88,8 @@ internal fun ProfilePopupContent(
     val dismissPopup by rememberUpdatedState(onDismissRequest)
     var panelBounds by remember { mutableStateOf(Rect.Zero) }
     val items: List<NuvioProfile?> = if (profiles.size < MAX_PROFILES) profiles + listOf(null) else profiles
+    // Light mode: a solid panel instead of the blur.
+    val panelHazeState = if (LocalLightMode.current) null else hazeState
     BoxWithConstraints(modifier.widthIn(max = 336.dp)) {
         val availableWidth = (maxWidth - 32.dp).coerceAtLeast(0.dp)
         val preferredColumns = if (items.size == 4) 2 else items.size.coerceAtMost(3)
@@ -109,8 +112,8 @@ internal fun ProfilePopupContent(
                     .shadow(12.dp, shape)
                     .clip(shape)
                     .then(
-                        if (hazeState != null) {
-                            Modifier.hazeEffect(hazeState) {
+                        if (panelHazeState != null) {
+                            Modifier.hazeEffect(panelHazeState) {
                                 blurRadius = 24.dp
                                 backgroundColor = Color(0xFF1C1C1E)
                                 tints = listOf(HazeTint(Color(0xFF1C1C1E).copy(alpha = 0.55f)))

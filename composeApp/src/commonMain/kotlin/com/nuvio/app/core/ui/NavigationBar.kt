@@ -1,5 +1,6 @@
 package com.nuvio.app.core.ui
 
+import com.nuvio.app.core.performance.LocalLightMode
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -139,21 +140,22 @@ fun NuvioNavigationBar(
             .padding(contentPadding),
         contentAlignment = Alignment.BottomCenter,
     ) {
-        // The floating pill
+        // The floating pill (light mode: solid fill instead of the blur)
+        val pillHazeState = if (LocalLightMode.current) null else hazeState
         val pillModifier = Modifier
             .padding(horizontal = horizontalPadding)
             .fillMaxWidth()
             .clip(RoundedCornerShape(NuvioTokens.Radius.full))
             .then(
-                if (hazeState != null) {
-                    Modifier.hazeEffect(state = hazeState) {
+                if (pillHazeState != null) {
+                    Modifier.hazeEffect(state = pillHazeState) {
                         blurRadius = 24.dp
                     }
                 } else {
                     Modifier
                 },
             )
-            .background(Color(0xFF1C1C1E).copy(alpha = if (hazeState != null) 0.55f else 0.82f))
+            .background(Color(0xFF1C1C1E).copy(alpha = if (pillHazeState != null) 0.55f else 0.82f))
 
         Box(modifier = pillModifier) {
             Row(

@@ -1,5 +1,6 @@
 package com.nuvio.app.features.home.components
 
+import com.nuvio.app.core.performance.LocalLightMode
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,6 +77,17 @@ import org.jetbrains.compose.resources.stringResource
 import com.nuvio.app.core.i18n.localizedEpisodeTitle
 
 private val ContinueWatchingStatusBadgeShape = RoundedCornerShape(4.dp)
+private val ContinueWatchingSpoilerScrim = Color.Black.copy(alpha = 0.86f)
+
+/** Hides an unwatched episode still. Light mode swaps the costly blur for a solid dark scrim. */
+internal fun Modifier.continueWatchingSpoilerCover(enabled: Boolean, lightMode: Boolean): Modifier = when {
+    !enabled -> this
+    lightMode -> drawWithContent {
+        drawContent()
+        drawRect(ContinueWatchingSpoilerScrim)
+    }
+    else -> blur(18.dp)
+}
 private val ContinueWatchingNewEpisodeBadgeColor = Color(0xFF1D4ED8)
 private val ContinueWatchingNewSeasonBadgeColor = Color(0xFFB45309)
 private const val ContinueWatchingLandscapeCardScale = 1.2f
@@ -737,7 +749,7 @@ private fun ContinueWatchingCard(
                 contentDescription = item.title,
                 modifier = Modifier
                     .fillMaxSize()
-                    .then(if (shouldBlurArtwork) Modifier.blur(18.dp) else Modifier)
+                    .continueWatchingSpoilerCover(shouldBlurArtwork, LocalLightMode.current)
                     .drawWithContent {
                         drawContent()
 
@@ -1067,7 +1079,7 @@ private fun ContinueWatchingPosterCard(
                     contentDescription = item.title,
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(if (shouldBlurArtwork) Modifier.blur(18.dp) else Modifier),
+                        .continueWatchingSpoilerCover(shouldBlurArtwork, LocalLightMode.current),
                     contentScale = if (item.isCloudLibraryItem()) ContentScale.Fit else ContentScale.Crop,
                 )
             }
@@ -1179,7 +1191,7 @@ private fun ArtworkPanel(
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
-                    .then(if (blurred) Modifier.blur(18.dp) else Modifier),
+                    .continueWatchingSpoilerCover(blurred, LocalLightMode.current),
                 contentScale = contentScale,
             )
         }

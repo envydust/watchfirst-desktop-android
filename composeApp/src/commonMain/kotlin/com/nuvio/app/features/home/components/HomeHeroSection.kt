@@ -1,5 +1,8 @@
 package com.nuvio.app.features.home.components
 
+import com.nuvio.app.core.performance.LocalLightMode
+import com.nuvio.app.features.settings.AppBrandWordmark
+
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -133,8 +136,10 @@ fun HomeHeroSection(
         }
     }
 
-    ScreenActivityEffect(autoScrollPage, items.size) { active ->
-        if (!active || items.size <= 1) return@ScreenActivityEffect
+    val lightMode = LocalLightMode.current
+    // Light mode: no auto-advance; each change repaints two full-screen backdrops for the whole fade.
+    ScreenActivityEffect(autoScrollPage, items.size, lightMode) { active ->
+        if (!active || items.size <= 1 || lightMode) return@ScreenActivityEffect
         delay(HERO_AUTO_SCROLL_INTERVAL_MS)
         while (pagerState.isScrollInProgress) {
             delay(100L)
@@ -312,20 +317,24 @@ fun HomeHeroSection(
                         }
                     }
 
-                    if (!layout.isTablet) {
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Surface(
-                            modifier = Modifier
-                                .clickable(enabled = onItemClick != null) {
-                                    onItemClick?.invoke(currentItem)
-                                },
-                            color = MaterialTheme.colorScheme.onBackground,
-                            contentColor = MaterialTheme.colorScheme.background,
-                            shape = RoundedCornerShape(40.dp),
+                    // Green "Ver detalhes" button, as in the WATCHFIRST PC hero.
+                    Spacer(modifier = Modifier.height(if (layout.isTablet) 16.dp else 14.dp))
+                    Surface(
+                        modifier = Modifier
+                            .height(54.dp)
+                            .clickable(enabled = onItemClick != null) {
+                                onItemClick?.invoke(currentItem)
+                            },
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        shape = RoundedCornerShape(14.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier.padding(horizontal = 28.dp),
+                            contentAlignment = Alignment.Center,
                         ) {
                             Text(
                                 text = stringResource(Res.string.home_view_details),
-                                modifier = Modifier.padding(horizontal = 28.dp, vertical = 12.dp),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )
@@ -431,6 +440,22 @@ private fun HeroContentBlock(
             .animateContentSize(),
         horizontalAlignment = if (layout.isTablet) Alignment.Start else Alignment.CenterHorizontally,
     ) {
+        // WATCHFIRST badge above the title on tall heroes, as on the PC.
+        if (layout.heroHeight >= 560.dp) {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppBrandWordmark(
+                    contentDescription = "WATCHFIRST",
+                    modifier = Modifier.width(168.dp).height(28.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(18.dp))
+        }
         if (logoUrl != null && !logoLoadError) {
             AsyncImage(
                 model = logoUrl,

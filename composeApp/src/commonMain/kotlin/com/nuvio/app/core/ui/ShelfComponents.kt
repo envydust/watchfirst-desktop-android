@@ -1,6 +1,7 @@
 package com.nuvio.app.core.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,7 +66,7 @@ fun <T> NuvioShelfSection(
     headerHorizontalPadding: Dp = 0.dp,
     rowContentPadding: PaddingValues = PaddingValues(0.dp),
     rowModifier: Modifier = Modifier,
-    itemSpacing: Dp = 10.dp,
+    itemSpacing: Dp = 16.dp,
     onViewAllClick: (() -> Unit)? = null,
     viewAllPillSize: NuvioViewAllPillSize = NuvioViewAllPillSize.Default,
     key: ((T) -> Any)? = null,
@@ -153,6 +154,7 @@ fun NuvioPosterCard(
                 .fillMaxWidth()
                 .aspectRatio(shape.aspectRatio)
                 .clip(cardShape)
+                .border(1.dp, tokens.colors.borderSubtle, cardShape)
                 .background(tokens.colors.surface)
                 .nuvioCardDepth(
                     shape = cardShape,
@@ -286,6 +288,13 @@ private fun NuvioShelfSectionHeader(
             horizontalArrangement = Arrangement.spacedBy(tokens.spacing.controlGap),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Box(
+                modifier = Modifier
+                    .width(3.dp)
+                    .height(20.dp)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(tokens.colors.accent),
+            )
             Text(
                 text = title,
                 modifier = Modifier.weight(1f),
@@ -325,7 +334,7 @@ private fun NuvioViewAllPill(
         modifier = modifier
             .size(actionSize)
             .background(
-                color = tokens.colors.surface,
+                color = tokens.colors.accent.copy(alpha = 0.10f),
                 shape = RoundedCornerShape(NuvioTokens.Radius.xl),
             )
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
@@ -334,7 +343,7 @@ private fun NuvioViewAllPill(
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
             contentDescription = viewAllText,
-            tint = tokens.colors.textMuted,
+            tint = tokens.colors.accent,
             modifier = Modifier.size(iconSize),
         )
     }

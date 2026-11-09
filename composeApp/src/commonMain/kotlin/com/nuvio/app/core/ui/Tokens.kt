@@ -378,8 +378,8 @@ internal fun defaultNuvioThemeTokens(
     val surfaceCard = palette.backgroundCard
     val accent = palette.secondary
     val accentStrong = palette.secondaryVariant
-    val borderSubtle = Color(0xFF252A2A).copy(alpha = 0.55f)
-    val borderDefault = Color(0xFF252A2A)
+    val borderSubtle = Color.White.copy(alpha = 0.065f)
+    val borderDefault = Color(0xFF2C3843)
     val overlayScrim = Color.Black.copy(alpha = NuvioTokens.Opacity.overlayMedium)
 
     return NuvioThemeTokens(
@@ -432,13 +432,13 @@ internal fun defaultNuvioThemeTokens(
             screenHorizontal = NuvioTokens.Space.s16,
             screenTop = NuvioTokens.Space.s10,
             screenBottom = NuvioTokens.Space.s18,
-            sectionGap = NuvioTokens.Space.s24,
+            sectionGap = NuvioTokens.Space.s32,
             listGap = NuvioTokens.Space.s12,
             railGap = NuvioTokens.Space.s14,
-            cardPadding = NuvioTokens.Space.s18,
-            cardPaddingCompact = NuvioTokens.Space.s14,
+            cardPadding = NuvioTokens.Space.s24,
+            cardPaddingCompact = NuvioTokens.Space.s18,
             controlGap = NuvioTokens.Space.s8,
-            dialogPadding = NuvioTokens.Space.s20,
+            dialogPadding = NuvioTokens.Space.s24,
             sheetPadding = NuvioTokens.Space.s20,
             playerOverlayPadding = NuvioTokens.Space.s24,
         ),

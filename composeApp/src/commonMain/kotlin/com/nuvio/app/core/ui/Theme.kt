@@ -20,7 +20,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Density
 import nuvio.composeapp.generated.resources.Res
-import nuvio.composeapp.generated.resources.antonsc_regular
 import nuvio.composeapp.generated.resources.jetbrains_sans_bold
 import nuvio.composeapp.generated.resources.jetbrains_sans_regular
 import nuvio.composeapp.generated.resources.jetbrains_sans_semibold
@@ -70,28 +69,23 @@ private val JetBrainsSans: FontFamily
         Font(Res.font.jetbrains_sans_regular, FontWeight.Normal, FontStyle.Normal),
     )
 
-private val AntonSC: FontFamily
-    @Composable
-    get() = FontFamily(
-        Font(Res.font.antonsc_regular, FontWeight.Normal, FontStyle.Normal),
-    )
-
 private val NuvioTypography: Typography
     @Composable
     get() = Typography(
+        // Same type as the WATCHFIRST PC app: JetBrains Sans everywhere.
         displayLarge = TextStyle(
-            fontFamily = AntonSC,
+            fontFamily = JetBrainsSans,
             fontSize = NuvioTokens.Type.pageDisplay,
             lineHeight = NuvioTokens.LineHeight.pageDisplay,
-            fontWeight = FontWeight.Normal,
-            letterSpacing = NuvioTokens.LetterSpacing.label,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = NuvioTokens.LetterSpacing.pageDisplay,
         ),
         headlineLarge = TextStyle(
-            fontFamily = AntonSC,
+            fontFamily = JetBrainsSans,
             fontSize = NuvioTokens.Type.headline,
             lineHeight = NuvioTokens.LineHeight.headline,
-            fontWeight = FontWeight.Normal,
-            letterSpacing = NuvioTokens.LetterSpacing.label,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = NuvioTokens.LetterSpacing.headline,
         ),
         titleLarge = TextStyle(
             fontFamily = JetBrainsSans,
@@ -184,16 +178,16 @@ private val NuvioTypeTokens: NuvioTypeScale
             fontWeight = FontWeight.SemiBold,
         ),
         displaySm = TextStyle(
-            fontFamily = AntonSC,
+            fontFamily = JetBrainsSans,
             fontSize = NuvioTokens.Type.displaySm,
             lineHeight = NuvioTokens.LineHeight.displaySm,
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.Bold,
         ),
         displayMd = TextStyle(
-            fontFamily = AntonSC,
+            fontFamily = JetBrainsSans,
             fontSize = NuvioTokens.Type.displayMd,
             lineHeight = NuvioTokens.LineHeight.displayMd,
-            fontWeight = FontWeight.Normal,
+            fontWeight = FontWeight.Bold,
         ),
     )
 

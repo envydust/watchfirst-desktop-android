@@ -1,5 +1,6 @@
 package com.nuvio.app.features.player
 
+import com.nuvio.app.core.performance.LocalLightMode
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -72,16 +73,21 @@ internal fun OpeningOverlay(
         animationSpec = tween(durationMillis = 700, delayMillis = 400, easing = LinearEasing),
         label = "openingOverlayContentAlpha",
     )
-    val pulse = rememberInfiniteTransition(label = "openingOverlayContentPulse")
-    val contentScale by pulse.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.04f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "openingOverlayContentScale",
-    )
+    // Light mode: no endless pulse, so the overlay stops asking for frames while the video starts.
+    val contentScaleState: androidx.compose.runtime.State<Float> = if (LocalLightMode.current) {
+        remember { mutableStateOf(1f) }
+    } else {
+        rememberInfiniteTransition(label = "openingOverlayContentPulse").animateFloat(
+            initialValue = 1f,
+            targetValue = 1.04f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 2000, easing = LinearEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
+            label = "openingOverlayContentScale",
+        )
+    }
+    val contentScale by contentScaleState
     var logoLoadError by remember(logo) { mutableStateOf(false) }
     val logoUrl = logo?.takeIf { it.isNotBlank() }
 

@@ -34,7 +34,7 @@ object ThemeSettingsRepository {
     private val _liquidGlassNativeTabBarEnabled = MutableStateFlow(false)
     val liquidGlassNativeTabBarEnabled: StateFlow<Boolean> = _liquidGlassNativeTabBarEnabled.asStateFlow()
 
-    private val _selectedAppLanguage = MutableStateFlow(AppLanguage.DEVICE)
+    private val _selectedAppLanguage = MutableStateFlow(AppLanguage.PORTUGUESE_BRAZIL)
     val selectedAppLanguage: StateFlow<AppLanguage> = _selectedAppLanguage.asStateFlow()
 
     private val _navBarStyle = MutableStateFlow(NavBarStyle.ADAPTIVE)
@@ -66,7 +66,7 @@ object ThemeSettingsRepository {
         _liquidGlassNativeTabBarEnabled.value = false
         NativeTabBridge.publishAccentColor(ThemeColors.White.nativeAccentHex)
         NativeTabBridge.publishLiquidGlassEnabled(false)
-        _selectedAppLanguage.value = AppLanguage.DEVICE
+        _selectedAppLanguage.value = AppLanguage.PORTUGUESE_BRAZIL
         _navBarGlowEnabled.value = true
         _navBarStyle.value = NavBarStyle.ADAPTIVE
     }
@@ -90,7 +90,7 @@ object ThemeSettingsRepository {
         val liquidGlassEnabled = ThemeSettingsStorage.loadLiquidGlassNativeTabBarEnabled() ?: false
         _liquidGlassNativeTabBarEnabled.value = liquidGlassEnabled
         NativeTabBridge.publishLiquidGlassEnabled(liquidGlassEnabled)
-        val appLanguage = AppLanguage.fromCode(ThemeSettingsStorage.loadSelectedAppLanguage())
+        val appLanguage = AppLanguage.fromCode(ThemeSettingsStorage.loadSelectedAppLanguage() ?: AppLanguage.PORTUGUESE_BRAZIL.code)
         ThemeSettingsStorage.applySelectedAppLanguage(appLanguage.code)
         _selectedAppLanguage.value = appLanguage
         _navBarGlowEnabled.value = ThemeSettingsStorage.loadNavBarGlowEnabled() ?: true

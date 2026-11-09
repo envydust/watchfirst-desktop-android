@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -121,8 +122,9 @@ fun NuvioSurfaceCard(
         modifier = modifier.fillMaxWidth(),
         color = tokens.colors.surface,
         shape = tokens.shapes.card,
+        border = BorderStroke(1.dp, tokens.colors.borderSubtle),
         tonalElevation = tonalElevation.dp,
-        shadowElevation = tokens.elevation.flat,
+        shadowElevation = tokens.elevation.raised,
     ) {
         Column(
             modifier = Modifier.padding(tokens.spacing.cardPadding),
@@ -308,7 +310,7 @@ fun NuvioPrimaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(NuvioTokens.Space.s48 + NuvioTokens.Space.s4),
+            .height(54.dp),
         enabled = enabled,
         shape = tokens.shapes.button,
         colors = ButtonDefaults.buttonColors(

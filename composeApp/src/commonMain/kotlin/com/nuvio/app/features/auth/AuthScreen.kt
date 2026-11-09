@@ -116,7 +116,7 @@ import com.nuvio.app.core.build.WatchfirstLinks
 internal val AuthTextPrimary = Color(0xFFF5F7F8)
 internal val AuthTextSecondary = Color(0xFF969CA3)
 private val AuthTextMuted = Color(0xFF6E7178)
-private val AuthPrimaryButtonBackground = Color(0xFF24FF00)
+private val AuthPrimaryButtonBackground = Color(0xFF39FF14)
 private val AuthPrimaryButtonText = Color(0xFF000000)
 internal val AuthFieldBackground = Color.White.copy(alpha = 0.04f)
 private val AuthFieldBackgroundMobile = Color.White.copy(alpha = 0.035f)

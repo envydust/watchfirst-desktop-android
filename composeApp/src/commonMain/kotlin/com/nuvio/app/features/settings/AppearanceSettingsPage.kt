@@ -150,6 +150,10 @@ internal fun LazyListScope.appearanceSettingsContent(
             )
         }
     }
+    // Same "Desempenho" section as the WATCHFIRST PC app.
+    item(key = "performance-mode") {
+        PerformanceModeSection(isTablet = isTablet)
+    }
 }
 
 private data class AppLanguageSheetOption(

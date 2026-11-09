@@ -99,7 +99,13 @@ internal fun AppEnvironment(content: @Composable () -> Unit) {
 
     val customThemeColors by ThemeSettingsRepository.customThemeColors.collectAsStateWithLifecycle()
 
+    val lightMode = com.nuvio.app.core.performance.rememberLightModeState()
+
     NuvioTheme(appTheme = selectedTheme, amoled = amoledEnabled, customThemeColors = customThemeColors) {
-        content()
+        androidx.compose.runtime.CompositionLocalProvider(
+            com.nuvio.app.core.performance.LocalLightMode provides lightMode,
+        ) {
+            content()
+        }
     }
 }

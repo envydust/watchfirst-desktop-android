@@ -81,6 +81,8 @@ internal fun MainTabsDestination(
         val navBarHazeState = rememberHazeState()
         val navBarStyleSetting by remember { ThemeSettingsRepository.navBarStyle }.collectAsStateWithLifecycle()
         val navBarGlowEnabled by ThemeSettingsRepository.navBarGlowEnabled.collectAsStateWithLifecycle()
+        // Light mode (Aparência > Desempenho): bars and the profile popup use solid fills, no blur.
+        val barHazeState = if (com.nuvio.app.core.performance.LocalLightMode.current) null else navBarHazeState
         val accessState by WatchfirstAccess.state.collectAsStateWithLifecycle()
         // Same tab the PC app has: live channels for MAX members, kept off the home screen.
         val showLiveTv = accessState.liveTvEnabled
@@ -123,7 +125,7 @@ internal fun MainTabsDestination(
                         onClick = onClick,
                         onProfileSelected = onProfileSelected,
                         onAddProfileRequested = onAddProfileRequested,
-                        hazeState = navBarHazeState,
+                        hazeState = barHazeState,
                         popupBelowAnchor = isTabletLayout,
                     )
                 },
@@ -203,7 +205,7 @@ internal fun MainTabsDestination(
                     FloatingNavigationBar(
                         modifier = Modifier.align(Alignment.TopCenter).widthIn(max = 416.dp),
                         scrollState = tabletNavBarScrollState,
-                        hazeState = navBarHazeState,
+                        hazeState = barHazeState,
                         contentPadding = PaddingValues(
                             top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 10.dp,
                             bottom = 8.dp,
@@ -223,7 +225,7 @@ internal fun MainTabsDestination(
                     FloatingNavigationBar(
                         modifier = Modifier.align(Alignment.BottomCenter),
                         scrollState = navBarScrollState,
-                        hazeState = navBarHazeState,
+                        hazeState = barHazeState,
                         items = floatingNavigationItems,
                         glowEnabled = navBarGlowEnabled,
                     )
