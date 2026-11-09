@@ -75,7 +75,7 @@ jobs:
           cd "$RUNNER_TEMP/apk"
           test -n "$(ls *.apk 2>/dev/null)" || { echo "nenhum APK gerado"; exit 1; }
           sha256sum *.apk > SHA256SUMS.txt
-          VERSION=$(grep MARKETING_VERSION iosApp/Configuration/Version.xcconfig | head -1 | sed 's/.*= *//' | tr -d ' \r')
+          VERSION=$(sed -n "s/^MARKETING_VERSION=//p" "$GITHUB_WORKSPACE/iosApp/Configuration/Version.xcconfig" | tr -d " ")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           ls -la
 
