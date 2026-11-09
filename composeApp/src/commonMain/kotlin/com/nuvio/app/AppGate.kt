@@ -36,7 +36,9 @@ import com.nuvio.app.core.ui.NuvioLoadingIndicator
 import com.nuvio.app.core.ui.NuvioTokens
 import com.nuvio.app.core.ui.PlatformBackHandler
 import com.nuvio.app.core.ui.nuvio
-import com.nuvio.app.features.auth.AuthScreen
+import com.nuvio.app.features.access.WatchfirstAccess
+import com.nuvio.app.features.access.WatchfirstAccessScreen
+import kotlinx.coroutines.delay
 import com.nuvio.app.features.membership.MemberAccessRepository
 import com.nuvio.app.features.profiles.AvatarRepository
 import com.nuvio.app.features.profiles.NuvioProfile
@@ -103,6 +105,7 @@ internal fun AppGate(
     LaunchedEffect(Unit) {
         if (!ownsAppRuntime) return@LaunchedEffect
         AuthRepository.initialize()
+        WatchfirstAccess.start()
     }
 
     LaunchedEffect(Unit) {
@@ -114,6 +117,7 @@ internal fun AppGate(
     }
 
     val authState by AuthRepository.state.collectAsStateWithLifecycle()
+    val accessState by WatchfirstAccess.state.collectAsStateWithLifecycle()
     val profileState by ProfileRepository.state.collectAsStateWithLifecycle()
     val profileAvatars by AvatarRepository.avatars.collectAsStateWithLifecycle()
     val networkStatusUiState by remember {
@@ -152,6 +156,13 @@ internal fun AppGate(
     var profileSelectionTransitionActive by rememberSaveable { mutableStateOf(false) }
     var skipProfileSelectionEnterAnimation by remember { mutableStateOf(false) }
     var mainContentStarted by rememberSaveable { mutableStateOf(false) }
+
+    // The member's plan decides the catalogs: keep the active profile's WATCHFIRST addons in sync.
+    LaunchedEffect(gateScreen == AppGateScreen.Main.name, profileState.activeProfile?.profileIndex, accessState.addons) {
+        if (!ownsAppRuntime || gateScreen != AppGateScreen.Main.name || !accessState.granted) return@LaunchedEffect
+        delay(1_000)
+        WatchfirstAccess.syncContent()
+    }
     val externalMainContentReady = if (!renderMainContent && appGateController != null) {
         val ready by appGateController.mainContentReady.collectAsStateWithLifecycle()
         ready
@@ -272,8 +283,10 @@ internal fun AppGate(
         profileSelectionLoading = false
         profileSelectionTransitionActive = false
         if (profiles.isEmpty()) {
+            // First access on this device: straight to creating the person's profile.
             autoSkipProfileSelection = true
-            gateScreen = AppGateScreen.ProfileSelection.name
+            editingProfile = null
+            gateScreen = AppGateScreen.ProfileEdit.name
             return
         }
 
@@ -299,7 +312,19 @@ internal fun AppGate(
         }
     }
 
-    LaunchedEffect(authState, networkStatusUiState.condition, profileState.profiles) {
+    LaunchedEffect(authState, accessState.granted, networkStatusUiState.condition, profileState.profiles) {
+        // WATCHFIRST access comes first: without a session from the service, only the entry screen.
+        if (!accessState.granted) {
+            profileSelectionLoading = false
+            profileSelectionTransitionActive = false
+            gateScreen = AppGateScreen.Auth.name
+            return@LaunchedEffect
+        }
+        // With access, the app runs as a local account on this device (no separate login).
+        if (authState is AuthState.Unauthenticated) {
+            AuthRepository.signInAnonymously()
+            return@LaunchedEffect
+        }
         val cachedProfiles = profileState.profiles
         val hasCachedProfileAccess =
             cachedProfiles.isNotEmpty() &&
@@ -437,10 +462,9 @@ internal fun AppGate(
                     }
                 }
                 AppGateScreen.Auth.name -> {
-                    AuthScreen(
+                    WatchfirstAccessScreen(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(MaterialTheme.nuvio.colors.background)
                             .padding(LocalVerticalBarPadding.current),
                     )
                 }
@@ -455,10 +479,20 @@ internal fun AppGate(
                     PlatformBackHandler(enabled = gateScreen == AppGateScreen.ProfileEdit.name) {
                         gateScreen = AppGateScreen.ProfileSelection.name
                     }
+                    val creatingFirstProfile = editingProfile == null && profileState.profiles.isEmpty()
                     ProfileEditScreen(
                         profile = editingProfile,
+                        initialName = if (creatingFirstProfile) WatchfirstAccess.savedName.substringBefore(' ') else "",
                         onBack = { gateScreen = AppGateScreen.ProfileSelection.name },
-                        onSaved = { gateScreen = AppGateScreen.ProfileSelection.name },
+                        onSaved = {
+                            val profiles = ProfileRepository.state.value.profiles
+                            if (creatingFirstProfile && profiles.size == 1) {
+                                // The first profile opens the app right away.
+                                enterProfileGate(profiles, syncOnEnter = false)
+                            } else {
+                                gateScreen = AppGateScreen.ProfileSelection.name
+                            }
+                        },
                         modifier = Modifier.fillMaxSize(),
                     )
                 }

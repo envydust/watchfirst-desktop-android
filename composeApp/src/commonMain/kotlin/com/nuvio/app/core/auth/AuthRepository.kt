@@ -138,6 +138,8 @@ object AuthRepository {
 
     suspend fun signOut(): Result<Unit> {
         _error.value = null
+        // Leaving the app also ends the WATCHFIRST session, so the entry screen asks for a new code.
+        runCatching { com.nuvio.app.features.access.WatchfirstAccess.signOut() }
         val anonymousRead = runCatching { AuthStorage.loadAnonymousUserId() }
         val wasAnonymous = anonymousRead.getOrNull() != null
         val anonymousClear = runCatching { AuthStorage.clearAnonymousUserId() }

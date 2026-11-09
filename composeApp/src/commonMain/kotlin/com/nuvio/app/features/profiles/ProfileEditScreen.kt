@@ -61,6 +61,8 @@ fun ProfileEditScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Pre-filled name for a new profile (the name typed at the WATCHFIRST entry). */
+    initialName: String = "",
 ) {
     val isNew = profile == null
     val scope = rememberCoroutineScope()
@@ -72,7 +74,7 @@ fun ProfileEditScreen(
     }
     val fallbackColorHex = currentProfile?.avatarColorHex ?: PROFILE_COLORS.first()
 
-    var name by rememberSaveable { mutableStateOf(currentProfile?.name ?: "") }
+    var name by rememberSaveable { mutableStateOf(currentProfile?.name ?: initialName.take(20)) }
     var selectedAvatarId by rememberSaveable { mutableStateOf(currentProfile?.avatarId) }
     var avatarUrl by rememberSaveable { mutableStateOf(currentProfile?.avatarUrl.orEmpty()) }
     var selectedBackgroundId by rememberSaveable { mutableStateOf(currentProfile?.profileBackgroundId) }
