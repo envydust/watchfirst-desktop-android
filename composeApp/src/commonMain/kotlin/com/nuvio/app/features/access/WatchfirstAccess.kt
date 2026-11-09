@@ -156,7 +156,7 @@ object WatchfirstAccess {
      * gateway URLs that are missing and removes WATCHFIRST gateway URLs that are no longer granted.
      * Addons the person added on their own are never touched.
      */
-    suspend fun syncContent(): Unit = syncLock.withLock {
+    suspend fun syncContent() = syncLock.withLock<Unit> {
         val desired = if (_state.value.granted) _state.value.addons else emptyList()
         runCatching {
             AddonRepository.initialize()
@@ -178,7 +178,6 @@ object WatchfirstAccess {
                 PluginRepository.addRepository(url)
             }
         }.onFailure { if (it is CancellationException) throw it; log.w(it) { "Plugin sync failed" } }
-        Unit
     }
 
     private suspend fun verifySilently() {
