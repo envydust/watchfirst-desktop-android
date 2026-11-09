@@ -120,7 +120,8 @@ internal fun LiveTvScreen(
         val cardWidth = if (maxWidth >= 600.dp) 264.dp else (maxWidth - ScreenGutter * 2) * 0.62f
 
         NuvioScreen(horizontalPadding = 0.dp) {
-            stickyHeader(key = "live-header") {
+            // Scrolls away with the content: on a phone a fixed header this tall would hide most cards.
+            item(key = "live-header") {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

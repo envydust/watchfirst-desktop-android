@@ -47,14 +47,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
-import com.kmpalette.extensions.painter.rememberPainterDominantColorState
+import coil3.request.SuccessResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.nuvio.app.core.ui.nuvio
 
 /** Live red, used only on the "AO VIVO" badge. */
@@ -117,18 +118,17 @@ private fun ChannelArt(
     val colors = MaterialTheme.nuvio.colors
     val logoUrl = channel.imageUrl
     val artworkUrl = (channel.meta.landscapePoster ?: channel.meta.banner)?.takeIf { it.isNotBlank() && it != logoUrl }
+    // Color.Unspecified in the cache means "analysed, no saturated colour" (white logos stay neutral).
     var tint by remember(logoUrl) { mutableStateOf(logoUrl?.let(ChannelTintCache::get)) }
-    var logoPainter by remember(logoUrl) { mutableStateOf<Painter?>(null) }
-    val palette = rememberPainterDominantColorState(defaultColor = colors.surfaceCard, defaultOnColor = Color.White)
-    LaunchedEffect(logoPainter) {
-        val painter = logoPainter ?: return@LaunchedEffect
+    var logoResult by remember(logoUrl) { mutableStateOf<SuccessResult?>(null) }
+    LaunchedEffect(logoResult) {
+        val result = logoResult ?: return@LaunchedEffect
         if (tint != null || logoUrl == null) return@LaunchedEffect
-        runCatching { palette.updateFrom(painter) }
-        val extracted = palette.color
+        val extracted = withContext(Dispatchers.Default) { channelLogoTint(result) } ?: Color.Unspecified
         tint = extracted
         ChannelTintCache.put(logoUrl, extracted)
     }
-    val base = tint ?: colors.surfaceCard
+    val base = tint?.takeIf { it != Color.Unspecified } ?: colors.surfaceCard
 
     BoxWithConstraints(modifier = modifier.background(colors.surface)) {
         if (artworkUrl != null) {
@@ -170,8 +170,8 @@ private fun ChannelArt(
             AsyncImage(
                 model = logoUrl,
                 contentDescription = null,
-                modifier = Modifier.size(1.dp).graphicsLayer { alpha = 0f },
-                onSuccess = { state -> logoPainter = state.painter },
+                modifier = Modifier.size(96.dp).graphicsLayer { alpha = 0f },
+                onSuccess = { state -> logoResult = state.result },
             )
         }
     }
