@@ -212,7 +212,8 @@ private fun HomeCategoryMenuSheet(
             )
         } else LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = 32.dp),
+            // Room for the floating bottom bar, which stays above the menu.
+            contentPadding = PaddingValues(bottom = 140.dp),
         ) {
             groups.forEach { (group, sections) ->
                 item(key = "group:${group.name}") {
