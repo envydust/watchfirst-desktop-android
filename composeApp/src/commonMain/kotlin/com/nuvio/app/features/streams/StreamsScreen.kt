@@ -66,6 +66,7 @@ import com.nuvio.app.core.ui.NuvioModalBottomSheet
 import com.nuvio.app.core.ui.NuvioToastController
 import com.nuvio.app.core.ui.dismissNuvioBottomSheet
 import com.nuvio.app.features.downloads.DownloadsRepository
+import com.nuvio.app.features.downloads.testDownloadSource
 import com.nuvio.app.features.details.MetaScreenSettingsRepository
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -158,6 +159,8 @@ fun StreamsScreen(
     val noDirectStreamLinkText = stringResource(Res.string.streams_no_direct_link)
     var streamActionsTarget by remember(videoId) { mutableStateOf<StreamItem?>(null) }
     val downloadScope = rememberCoroutineScope()
+    // WATCHFIRST: one server test at a time (DownloadSourceProbe.kt).
+    var downloadTestRunning by remember { mutableStateOf(false) }
     var preferredFilterApplied by remember(videoId) { mutableStateOf(false) }
     val episodeProgress = watchProgressUiState.progressForVideo(
         videoId = videoId,
@@ -337,41 +340,39 @@ fun StreamsScreen(
                 }
             },
             onDownload = { stream ->
-                if (DirectDebridPlaybackResolver.shouldResolveToPlayableStream(stream)) {
-                    downloadScope.launch {
-                        val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
-                            stream = stream,
-                            season = seasonNumber,
-                            episode = episodeNumber,
-                        )
-                        when (resolved) {
-                            is DirectDebridPlayableResult.Success -> {
-                                val result = DownloadsRepository.enqueueFromStream(
-                                    contentType = type,
-                                    videoId = videoId,
-                                    parentMetaId = parentMetaId,
-                                    parentMetaType = parentMetaType,
-                                    title = title,
-                                    logo = logo,
-                                    poster = poster,
-                                    background = background,
-                                    seasonNumber = seasonNumber,
-                                    episodeNumber = episodeNumber,
-                                    episodeTitle = episodeTitle,
-                                    episodeThumbnail = episodeThumbnail,
-                                    stream = resolved.stream,
-                                )
-                                NuvioToastController.show(result.toastMessage())
-                            }
+                if (!downloadTestRunning) downloadScope.launch {
+                    val playable = if (DirectDebridPlaybackResolver.shouldResolveToPlayableStream(stream)) {
+                        when (
+                            val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
+                                stream = stream,
+                                season = seasonNumber,
+                                episode = episodeNumber,
+                            )
+                        ) {
+                            is DirectDebridPlayableResult.Success -> resolved.stream
                             else -> {
                                 val message = resolved.toastMessage()
                                 if (message != null) {
                                     NuvioToastController.show(message)
                                 }
+                                return@launch
                             }
                         }
+                    } else {
+                        stream
                     }
-                } else {
+                    // WATCHFIRST (member feedback): test the server first; a source that does not answer
+                    // with a video is reported now, not after the episode has "downloaded".
+                    downloadTestRunning = true
+                    val problem = try {
+                        testDownloadSource(playable)
+                    } finally {
+                        downloadTestRunning = false
+                    }
+                    if (problem != null) {
+                        NuvioToastController.show(problem, durationMillis = 6000L)
+                        return@launch
+                    }
                     val result = DownloadsRepository.enqueueFromStream(
                         contentType = type,
                         videoId = videoId,
@@ -385,7 +386,7 @@ fun StreamsScreen(
                         episodeNumber = episodeNumber,
                         episodeTitle = episodeTitle,
                         episodeThumbnail = episodeThumbnail,
-                        stream = stream,
+                        stream = playable,
                     )
                     NuvioToastController.show(result.toastMessage())
                 }
