@@ -166,6 +166,15 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
         val playerSurfaceSourceUrl = if (isP2pPlaybackActive) p2pResolvedSourceUrl else activeSourceUrl
         val playbackKey = activePlaybackKey
         val initialPositionRequestKey = currentInitialPositionRequestKey()
+        // Failover and manual switches are scoped to one source: a new source re-arms the failover
+        // and clears the previous engine choice. WATCHFIRST: this effect lives outside key(playbackKey)
+        // because that key includes the engine; inside it, every engine switch re-ran the effect,
+        // undid the switch and played the same failing link again, endlessly.
+        LaunchedEffect(playbackKey.copy(playbackEngine = null)) {
+            engineFailoverTriggered = false
+            engineFailoverDisarmed = false
+            playbackEngineOverride = null
+        }
         if (playerSurfaceSourceUrl != null) {
             key(playbackKey) {
                 val active = remember { mutableStateOf(true) }
@@ -191,15 +200,6 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
                     )
                 }
                 val resolvedAutoEngine = resolvedAutoEngineState.value
-                // Failover and manual switches are scoped to one source: a new source re-arms
-                // the failover and clears the previous engine choice. Keyed on the source, not
-                // on the full playbackKey, which includes the engine override — an effect keyed
-                // on it would undo the very switch that changed the key.
-                LaunchedEffect(playbackKey.copy(playbackEngine = null)) {
-                    engineFailoverTriggered = false
-                    engineFailoverDisarmed = false
-                    playbackEngineOverride = null
-                }
                 PlatformPlayerSurface(
                     sourceUrl = playerSurfaceSourceUrl,
                     sourceAudioUrl = activeSourceAudioUrl,
@@ -241,6 +241,12 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi() {
                         // Engine failover is decided here, driven by its own player setting;
                         // the engine's own decoder/MIME retries have already been tried.
                         if (message != null && maybeFailoverPlaybackEngine(resolvedAutoEngine)) {
+                            return@PlatformPlayerSurface
+                        }
+                        // WATCHFIRST: this source is done; try the next one instead of the same server.
+                        if (message != null && tryNextSourceAfterError(message)) {
+                            scrubbingPositionMs = null
+                            controlsVisible = !playerControlsLocked
                             return@PlatformPlayerSurface
                         }
                         errorMessage = message

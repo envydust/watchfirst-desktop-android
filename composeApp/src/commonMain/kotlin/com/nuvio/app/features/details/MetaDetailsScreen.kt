@@ -545,6 +545,19 @@ fun MetaDetailsScreen(
                 val toggleSaved = remember(meta, trackingListsUpdateFailedMessage) {
                     {
                         val item = meta.toLibraryItem(savedAtEpochMs = 0L)
+                        // WATCHFIRST: the "+" and check icons have no text, so confirm what happened in words.
+                        val savedMessage = if (LibraryRepository.isSaved(meta.id, meta.type)) {
+                            "Removido da sua Biblioteca"
+                        } else {
+                            "Adicionado à sua Biblioteca"
+                        }
+                        val confirmSaved: suspend (TrackingMembershipApplyResult) -> Unit = { applied ->
+                            if (applied.rewrites.isEmpty()) {
+                                NuvioToastController.show(savedMessage)
+                            } else {
+                                showTrackingMembershipRewriteFeedback(applied)
+                            }
+                        }
                         detailsScope.launch {
                             val toggleMembership: suspend (Set<TrackingProviderId>) ->
                                 TrackingMembershipApplyResult = { confirmedProviders ->
@@ -561,7 +574,7 @@ fun MetaDetailsScreen(
                                             itemTitle = item.name,
                                             confirmations = result.requiredRemovalConfirmations,
                                             retry = toggleMembership,
-                                            onApplied = ::showTrackingMembershipRewriteFeedback,
+                                            onApplied = confirmSaved,
                                             onFailure = { error ->
                                                 NuvioToastController.show(
                                                     error.message ?: trackingListsUpdateFailedMessage,
@@ -569,7 +582,7 @@ fun MetaDetailsScreen(
                                             },
                                         )
                                     } else {
-                                        showTrackingMembershipRewriteFeedback(result)
+                                        confirmSaved(result)
                                     }
                                 },
                                 onFailure = { error ->
@@ -584,8 +597,16 @@ fun MetaDetailsScreen(
                 }
                 val toggleWatched = remember(metaPreview) {
                     {
+                        val wasWatched = WatchingState.isPosterWatched(
+                            watchedKeys = WatchedRepository.uiState.value.watchedKeys,
+                            item = metaPreview,
+                            fullyWatchedSeriesKeys = WatchedRepository.fullyWatchedSeriesKeys.value,
+                        )
                         detailsScope.launch {
                             WatchingActions.togglePosterWatched(metaPreview)
+                            NuvioToastController.show(
+                                if (wasWatched) "Desmarcado como assistido" else "Marcado como assistido",
+                            )
                         }
                         Unit
                     }

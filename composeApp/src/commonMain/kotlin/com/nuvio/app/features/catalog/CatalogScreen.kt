@@ -1,6 +1,21 @@
 package com.nuvio.app.features.catalog
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import com.nuvio.app.core.ui.PlatformBackHandler
+import com.nuvio.app.core.ui.WatchfirstSearchField
+import com.nuvio.app.features.addons.AddonRepository
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -106,6 +121,79 @@ fun CatalogScreen(
     var headerHeightPx by remember { mutableIntStateOf(0) }
     var observedOfflineState by remember { mutableStateOf(false) }
 
+    // WATCHFIRST: search inside this list only (member feedback), instead of the global search.
+    var searchOpen by rememberSaveable(target) { mutableStateOf(false) }
+    var query by rememberSaveable(target) { mutableStateOf("") }
+    val trimmedQuery = query.trim()
+    val addonsUiState by AddonRepository.uiState.collectAsStateWithLifecycle()
+    // When the addon can search this very catalog, ask it; otherwise filter the titles already loaded.
+    val searchableCatalog = remember(target, addonsUiState.addons) {
+        (target as? CatalogTarget.Addon)?.let { addonTarget ->
+            addonsUiState.addons
+                .firstOrNull { it.manifestUrl == addonTarget.manifestUrl }
+                ?.manifest
+                ?.catalogs
+                ?.firstOrNull { it.id == addonTarget.catalogId && it.type == addonTarget.contentType }
+                ?.takeIf { catalog -> catalog.extra.any { it.name.equals("search", ignoreCase = true) } }
+        }
+    }
+    var remoteResults by remember(target) { mutableStateOf<List<MetaPreview>?>(null) }
+    var remoteSearching by remember(target) { mutableStateOf(false) }
+    LaunchedEffect(trimmedQuery, searchableCatalog) {
+        remoteResults = null
+        val addonTarget = target as? CatalogTarget.Addon
+        if (trimmedQuery.length < 2 || searchableCatalog == null || addonTarget == null) {
+            remoteSearching = false
+            return@LaunchedEffect
+        }
+        remoteSearching = true
+        delay(400)
+        remoteResults = try {
+            fetchCatalogPage(
+                manifestUrl = addonTarget.manifestUrl,
+                type = addonTarget.contentType,
+                catalogId = addonTarget.catalogId,
+                genre = addonTarget.genre,
+                search = trimmedQuery,
+            ).items
+        } catch (cancel: CancellationException) {
+            throw cancel
+        } catch (_: Exception) {
+            null
+        }
+        remoteSearching = false
+    }
+    // Without addon search, keep reading more pages of the list while the member searches.
+    var searchPagesLoaded by remember(target) { mutableIntStateOf(0) }
+    LaunchedEffect(trimmedQuery) {
+        searchPagesLoaded = 0
+        if (trimmedQuery.isNotEmpty()) gridState.scrollToItem(0)
+    }
+    LaunchedEffect(trimmedQuery, uiState.isLoading, uiState.canLoadMore, searchPagesLoaded, searchableCatalog) {
+        if (trimmedQuery.isEmpty() || searchableCatalog != null) return@LaunchedEffect
+        if (!uiState.isLoading && uiState.canLoadMore && searchPagesLoaded < MAX_LIST_SEARCH_PAGES) {
+            searchPagesLoaded += 1
+            CatalogRepository.loadMore()
+        }
+    }
+    val visibleItems = remember(uiState.items, trimmedQuery, remoteResults) {
+        if (trimmedQuery.isEmpty()) {
+            uiState.items
+        } else {
+            val needle = trimmedQuery.listSearchKey()
+            val local = uiState.items.filter { it.name.listSearchKey().contains(needle) }
+            (local + remoteResults.orEmpty()).distinctBy { it.stableKey() }
+        }
+    }
+    val searchBusy = trimmedQuery.isNotEmpty() && (
+        remoteSearching ||
+            (searchableCatalog == null && uiState.isLoading)
+        )
+    PlatformBackHandler(enabled = searchOpen) {
+        searchOpen = false
+        query = ""
+    }
+
     LaunchedEffect(target, homeCatalogSettingsUiState.hideUnreleasedContent) {
         CatalogRepository.load(
             target = target,
@@ -203,9 +291,20 @@ fun CatalogScreen(
                             },
                         )
                     }
+                } else if (trimmedQuery.isNotEmpty() && visibleItems.isEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        if (searchBusy) {
+                            CatalogLoadingFooter()
+                        } else {
+                            HomeEmptyStateCard(
+                                title = "Nada encontrado nesta lista",
+                                message = "Nenhum título de \"$title\" combina com \"$trimmedQuery\". Confira a digitação ou use a Busca geral.",
+                            )
+                        }
+                    }
                 } else {
                     items(
-                        items = uiState.items.withDuplicateSafeLazyKeys { item -> item.stableKey() },
+                        items = visibleItems.withDuplicateSafeLazyKeys { item -> item.stableKey() },
                         key = { item -> item.lazyKey },
                     ) { keyedItem ->
                         val item = keyedItem.value
@@ -222,7 +321,7 @@ fun CatalogScreen(
                             onLongClick = onPosterLongClick?.let { { it(item) } },
                         )
                     }
-                    if (uiState.isLoading) {
+                    if (uiState.isLoading || searchBusy) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
                             CatalogLoadingFooter()
                         }
@@ -235,6 +334,13 @@ fun CatalogScreen(
                 subtitle = subtitle,
                 modifier = Modifier.onSizeChanged { headerHeightPx = it.height },
                 onBack = onBack,
+                searchOpen = searchOpen,
+                query = query,
+                onQueryChange = { query = it.take(60) },
+                onToggleSearch = {
+                    if (searchOpen) query = ""
+                    searchOpen = !searchOpen
+                },
             )
         }
     }
@@ -246,6 +352,10 @@ private fun CatalogHeader(
     subtitle: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    searchOpen: Boolean = false,
+    query: String = "",
+    onQueryChange: (String) -> Unit = {},
+    onToggleSearch: (() -> Unit)? = null,
 ) {
     if (LocalUseNativeNavigation.current) {
         Box(
@@ -264,14 +374,37 @@ private fun CatalogHeader(
             .padding(horizontal = 16.dp)
             .padding(top = 52.dp, bottom = 12.dp),
     ) {
-        NuvioBackButton(
-            onClick = onBack,
-            modifier = Modifier
-                .size(40.dp),
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-            iconSize = 24.dp,
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            NuvioBackButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .size(40.dp),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                iconSize = 24.dp,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            if (onToggleSearch != null) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable(onClick = onToggleSearch),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = if (searchOpen) Icons.Rounded.Close else Icons.Rounded.Search,
+                        contentDescription = if (searchOpen) "Fechar busca nesta lista" else "Buscar nesta lista",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = title,
@@ -291,6 +424,38 @@ private fun CatalogHeader(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        if (searchOpen) {
+            val focusRequester = remember { FocusRequester() }
+            LaunchedEffect(Unit) { runCatching { focusRequester.requestFocus() } }
+            Spacer(modifier = Modifier.height(10.dp))
+            WatchfirstSearchField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = "Buscar nesta lista",
+                fontSize = 18.sp,
+                textFieldModifier = Modifier.focusRequester(focusRequester),
+            )
+        }
+    }
+}
+
+private const val MAX_LIST_SEARCH_PAGES = 8
+
+/** Lower case without Portuguese accents, so "acao" finds "Ação". */
+private fun String.listSearchKey(): String = buildString(length) {
+    for (char in this@listSearchKey.lowercase()) {
+        append(
+            when (char) {
+                'á', 'à', 'â', 'ã', 'ä' -> 'a'
+                'é', 'è', 'ê', 'ë' -> 'e'
+                'í', 'ì', 'î', 'ï' -> 'i'
+                'ó', 'ò', 'ô', 'õ', 'ö' -> 'o'
+                'ú', 'ù', 'û', 'ü' -> 'u'
+                'ç' -> 'c'
+                'ñ' -> 'n'
+                else -> char
+            },
+        )
     }
 }
 

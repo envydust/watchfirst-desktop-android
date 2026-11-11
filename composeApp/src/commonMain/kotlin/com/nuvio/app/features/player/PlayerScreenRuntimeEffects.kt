@@ -110,6 +110,10 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
         }
     }
 
+    LaunchedEffect(activeVideoId) {
+        autoSourceFallbackCount = 0
+    }
+
     LaunchedEffect(activePlaybackKey, activeSourceUrl, activeSourceAudioUrl, activeSourceHeaders, activeSourceResponseHeaders) {
         errorMessage = null
         playerController = null
@@ -204,10 +208,11 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
         } catch (error: CancellationException) {
             throw error
         } catch (error: Exception) {
-            errorMessage = getString(
+            val message = getString(
                 Res.string.player_error_failed_start_torrent,
                 error.message ?: genericUnknownLabel,
             )
+            if (!tryNextSourceAfterError(message)) errorMessage = message
             controlsVisible = !playerControlsLocked
             initialLoadCompleted = true
         }
@@ -221,7 +226,8 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
             playerControllerSourceUrl = null
             playbackSnapshot = PlayerPlaybackSnapshot()
             initialLoadCompleted = true
-            errorMessage = getString(Res.string.player_error_torrent, state.message)
+            val message = getString(Res.string.player_error_torrent, state.message)
+            if (!tryNextSourceAfterError(message)) errorMessage = message
             controlsVisible = !playerControlsLocked
         }
     }
@@ -897,9 +903,15 @@ internal fun PlayerScreenRuntime.tryRefreshCredentialedSourceAfterError(message:
     if (!failedUrl.hasLikelyExpiringPlaybackCredentials()) return false
     if (credentialRefreshJob?.isActive == true) return true
     if (credentialRefreshAttemptedSourceUrl == failedUrl) return false
+    // WATCHFIRST: the attempt marker above is cleared on every link change, so a refreshed link that
+    // also failed used to refresh again (and could bounce back to the first link) forever.
+    val refreshKey = "${activeProviderAddonId.orEmpty()}|$activeProviderName|$activeStreamTitle"
+    if (refreshKey in credentialRefreshedSources) return false
 
     val currentVideoId = activeVideoId ?: return false
     credentialRefreshAttemptedSourceUrl = failedUrl
+    credentialRefreshedSources += refreshKey
+    markActiveSourceFailed()
     removeFailedStreamFromCache()
 
     val savedPositionMs = playbackSnapshot.positionMs.coerceAtLeast(0L)
@@ -915,6 +927,7 @@ internal fun PlayerScreenRuntime.tryRefreshCredentialedSourceAfterError(message:
     controlsVisible = !playerControlsLocked
 
     credentialRefreshJob = scope.launch {
+        var moveToNextSource = false
         try {
             PlayerStreamsRepository.loadSources(
                 type = type,
@@ -929,7 +942,8 @@ internal fun PlayerScreenRuntime.tryRefreshCredentialedSourceAfterError(message:
             while (pollCount < CREDENTIAL_REFRESH_POLL_COUNT && refreshedStream == null) {
                 val state = PlayerStreamsRepository.sourceState.value
                 refreshedStream = findCredentialRefreshCandidate(
-                    streams = state.groups.flatMap { it.streams },
+                    streams = state.groups.flatMap { it.streams }
+                        .filter { candidate -> candidate.playableDirectUrl?.let { it in failedSourceKeys } != true },
                     failedUrl = failedUrl,
                     expectedProviderAddonId = expectedProviderAddonId,
                     expectedProviderName = expectedProviderName,
@@ -948,16 +962,11 @@ internal fun PlayerScreenRuntime.tryRefreshCredentialedSourceAfterError(message:
             }
 
             val stream = refreshedStream
-            if (stream == null) {
-                errorMessage = message
-                controlsVisible = !playerControlsLocked
-                return@launch
-            }
-
-            val refreshedUrl = stream.playableDirectUrl
-            if (refreshedUrl.isNullOrBlank() || refreshedUrl == failedUrl) {
-                errorMessage = message
-                controlsVisible = !playerControlsLocked
+            val refreshedUrl = stream?.playableDirectUrl
+            if (stream == null || refreshedUrl.isNullOrBlank() || refreshedUrl == failedUrl) {
+                // No fresh link from the same source: move on to another source (WATCHFIRST),
+                // after the source search below is stopped.
+                moveToNextSource = true
                 return@launch
             }
 
@@ -983,6 +992,13 @@ internal fun PlayerScreenRuntime.tryRefreshCredentialedSourceAfterError(message:
             controlsVisible = true
         } finally {
             PlayerStreamsRepository.stopSourcesLoading()
+            if (moveToNextSource) {
+                credentialRefreshJob = null
+                if (!tryNextSourceAfterError(message)) {
+                    errorMessage = message
+                    controlsVisible = !playerControlsLocked
+                }
+            }
         }
     }
     return true

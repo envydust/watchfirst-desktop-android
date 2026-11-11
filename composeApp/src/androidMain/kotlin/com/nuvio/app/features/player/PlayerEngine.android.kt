@@ -1377,6 +1377,14 @@ private fun LibmpvPlayerSurface(
                             latestOnSnapshot.value(snapshot)
                             nowPlayingController?.syncPlayback(snapshot)
                             view.keepScreenOn = snapshot.isPlaying || snapshot.isLoading
+                            // WATCHFIRST: report a file that could not be opened, so the player can
+                            // move to another source instead of loading forever.
+                            if (data.nodeString("reason") == "error") {
+                                latestOnError.value(
+                                    data.nodeString("file_error")
+                                        ?: getString(Res.string.player_unable_to_play_stream),
+                                )
+                            }
                         }
                     }
                 }

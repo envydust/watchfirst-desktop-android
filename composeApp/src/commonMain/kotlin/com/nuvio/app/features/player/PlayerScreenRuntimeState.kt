@@ -222,6 +222,13 @@ internal class PlayerScreenRuntime(
     var credentialRefreshJob by mutableStateOf<Job?>(null)
     var credentialRefreshAttemptedSourceUrl by mutableStateOf<String?>(null)
 
+    // WATCHFIRST: automatic move to another source when one fails (PlayerSourceFallback.kt).
+    var sourceFallbackJob by mutableStateOf<Job?>(null)
+    var autoSourceFallbackCount by mutableStateOf(0)
+    val failedSourceKeys = mutableSetOf<String>()
+    /** Sources (addon + name) whose link was already re-requested once in this session. */
+    val credentialRefreshedSources = mutableSetOf<String>()
+
     var showAudioModal by mutableStateOf(false)
     var showSubtitleModal by mutableStateOf(false)
     var showVideoSettingsModal by mutableStateOf(false)
