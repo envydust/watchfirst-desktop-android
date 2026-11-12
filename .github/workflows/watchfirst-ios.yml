@@ -58,7 +58,8 @@ jobs:
 
       - name: Show build errors
         if: failure()
-        run: grep -nE "error:|^e: |FAILED" "$RUNNER_TEMP/ios-build.log" | head -80 || true
+        run: |
+          grep -nE "error:|^e: |FAILED" "$RUNNER_TEMP/ios-build.log" | head -80 || true
 
       - name: Publish pre-release
         env:
