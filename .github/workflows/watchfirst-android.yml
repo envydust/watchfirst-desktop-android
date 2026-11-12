@@ -11,6 +11,10 @@ on:
     branches: [main, splash-watchfirst]
     paths-ignore:
       - '**.md'
+      # iPhone-only files build in watchfirst-ios.yml.
+      - '.github/workflows/watchfirst-ios.yml'
+      - 'scripts/build-ios-ipa.sh'
+      - 'iosApp/**'
 concurrency:
   group: watchfirst-android-${{ github.ref }}-${{ inputs.build_type || 'release' }}
   cancel-in-progress: true
