@@ -16,7 +16,7 @@ permissions:
 jobs:
   ios:
     runs-on: macos-15
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
@@ -27,8 +27,13 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Show Xcode
-        run: xcodebuild -version
+      - name: Select Xcode 26 (the app uses iOS 26 APIs)
+        run: |
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then echo "Xcode 26 not installed on this runner"; exit 1; fi
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
 
       - name: Write local configuration
         env:
