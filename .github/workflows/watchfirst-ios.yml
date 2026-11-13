@@ -2,12 +2,8 @@ name: WATCHFIRST iPhone
 # Unsigned IPA for sideloading (AltStore re-signs it with the member's own Apple ID).
 on:
   workflow_dispatch:
-  push:
-    branches: [splash-watchfirst]
-    paths:
-      - '.github/workflows/watchfirst-ios.yml'
-      - 'scripts/build-ios-ipa.sh'
-      - 'iosApp/**'
+  # iPhone paused by the owner (2026-11-13): build only on manual request.
+
 concurrency:
   group: watchfirst-ios-${{ github.ref }}
   cancel-in-progress: true
