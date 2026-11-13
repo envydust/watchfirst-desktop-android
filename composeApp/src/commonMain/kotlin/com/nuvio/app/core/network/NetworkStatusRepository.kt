@@ -136,7 +136,15 @@ object NetworkStatusRepository {
             return NetworkCondition.NoInternet
         }
 
-        val supabaseReachable = SupabaseEndpointConfig.restEndpointUrls().any { url ->
+        // WATCHFIRST does not use the Nuvio cloud backend: with no backend configured there is no
+        // server to probe, so a working internet connection means online. Treating the missing
+        // backend as "unreachable" silently disabled subtitles, skip-intro and next-episode.
+        val backendUrls = SupabaseEndpointConfig.restEndpointUrls()
+        if (backendUrls.isEmpty()) {
+            return NetworkCondition.Online
+        }
+
+        val supabaseReachable = backendUrls.any { url ->
             probeReachable(
                 url = url,
                 headers = mapOf("apikey" to ServerConfigurationRepository.active.value.publishableKey),
