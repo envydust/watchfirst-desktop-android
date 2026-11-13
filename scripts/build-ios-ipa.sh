@@ -41,6 +41,19 @@ fi
 if [[ -n "${NUVIO_KOTLIN_NATIVE_JVMARGS:-}" ]]; then
     build_environment+=("ORG_GRADLE_PROJECT_kotlin.native.jvmArgs=${NUVIO_KOTLIN_NATIVE_JVMARGS}")
 fi
+# WATCHFIRST: compile out the iOS 27.1-only UI code when the installed SDK is older than 27.1
+# (GitHub's macOS runners only ship up to Xcode 26.3). A newer Xcode builds the full feature set.
+sdk_compat="${repository_root}/iosApp/Configuration/SDKCompat.xcconfig"
+sdk_version="$(xcrun --sdk iphoneos --show-sdk-version)"
+sdk_major="${sdk_version%%.*}"
+sdk_minor="$(echo "${sdk_version}" | cut -d. -f2)"
+if (( sdk_major < 27 || (sdk_major == 27 && ${sdk_minor:-0} < 1) )); then
+    echo "iPhoneOS SDK ${sdk_version} predates iOS 27.1: building without the iOS 27.1-only UI code."
+    printf 'SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) %s\n' WATCHFIRST_PRE_IOS27_1_SDK > "${sdk_compat}"
+else
+    rm -f "${sdk_compat}"
+fi
+
 "${build_environment[@]}" \
     xcodebuild \
     -project iosApp/iosApp.xcodeproj \
