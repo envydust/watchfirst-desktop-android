@@ -843,8 +843,12 @@ private fun PlayerScreenRuntime.BindPlayerMetadataAndSkipEffects() {
         nextEpisodeCardDismissed,
     ) {
         val shouldShow = nextEpisodeInfo != null && !nextEpisodeCardDismissed && isAtNextEpisodeThreshold()
+        // WATCHFIRST: once shown, the card stays through a momentary buffering, scrub or error near
+        // the end (it used to vanish under the user's finger). It hides only when the episode is
+        // clearly before the threshold again, the card was dismissed or there is no next episode.
+        val mustHide = nextEpisodeInfo == null || nextEpisodeCardDismissed || isClearlyBeforeNextEpisodeThreshold()
         if (nextEpisodeAutoPlayAutomatic &&
-            (!shouldShow || !playerSettingsUiState.streamAutoPlayNextEpisodeEnabled)
+            (mustHide || !playerSettingsUiState.streamAutoPlayNextEpisodeEnabled)
         ) {
             cancelNextEpisodeAutoPlay()
         }
@@ -853,7 +857,7 @@ private fun PlayerScreenRuntime.BindPlayerMetadataAndSkipEffects() {
             if (playerSettingsUiState.streamAutoPlayNextEpisodeEnabled && nextEpisodeInfo?.hasAired == true && !isPartyControlLocked) {
                 playNextEpisode(automatic = true)
             }
-        } else if (!shouldShow) {
+        } else if (mustHide) {
             showNextEpisodeCard = false
         }
     }

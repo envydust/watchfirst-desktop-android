@@ -98,7 +98,7 @@ data class PlayerSettingsUiState(
     val streamAutoPlayPreferBingeGroup: Boolean = true,
     val streamAutoPlayReuseBingeGroup: Boolean = false,
     val nextEpisodeThresholdMode: NextEpisodeThresholdMode = NextEpisodeThresholdMode.PERCENTAGE,
-    val nextEpisodeThresholdPercent: Float = 99f,
+    val nextEpisodeThresholdPercent: Float = 97f,
     val nextEpisodeThresholdMinutesBeforeEnd: Float = 2f,
     val preloadNextEpisodeSources: Boolean = false,
     val useLibass: Boolean = true,
@@ -192,7 +192,7 @@ object PlayerSettingsRepository {
     private var streamAutoPlayPreferBingeGroup = true
     private var streamAutoPlayReuseBingeGroup = false
     private var nextEpisodeThresholdMode = NextEpisodeThresholdMode.PERCENTAGE
-    private var nextEpisodeThresholdPercent = 99f
+    private var nextEpisodeThresholdPercent = 97f
     private var nextEpisodeThresholdMinutesBeforeEnd = 2f
     private var preloadNextEpisodeSources = false
     private var useLibass = true
@@ -292,7 +292,7 @@ object PlayerSettingsRepository {
         streamAutoPlayPreferBingeGroup = true
         streamAutoPlayReuseBingeGroup = false
         nextEpisodeThresholdMode = NextEpisodeThresholdMode.PERCENTAGE
-        nextEpisodeThresholdPercent = 99f
+        nextEpisodeThresholdPercent = 97f
         nextEpisodeThresholdMinutesBeforeEnd = 2f
         preloadNextEpisodeSources = false
         useLibass = true
@@ -461,7 +461,7 @@ object PlayerSettingsRepository {
         nextEpisodeThresholdMode = PlayerSettingsStorage.loadNextEpisodeThresholdMode()
             ?.let { runCatching { NextEpisodeThresholdMode.valueOf(it) }.getOrNull() }
             ?: NextEpisodeThresholdMode.PERCENTAGE
-        nextEpisodeThresholdPercent = PlayerSettingsStorage.loadNextEpisodeThresholdPercent() ?: 99f
+        nextEpisodeThresholdPercent = PlayerSettingsStorage.loadNextEpisodeThresholdPercent() ?: 97f
         nextEpisodeThresholdMinutesBeforeEnd = PlayerSettingsStorage.loadNextEpisodeThresholdMinutesBeforeEnd() ?: 2f
         preloadNextEpisodeSources = PlayerSettingsStorage.loadPreloadNextEpisodeSources() ?: false
         useLibass = PlayerSettingsStorage.loadUseLibass() ?: true

@@ -475,17 +475,32 @@ internal fun PlayerScreenRuntime.switchToDownloadedEpisode(downloadItem: Downloa
 }
 
 internal fun PlayerScreenRuntime.playNextEpisode(automatic: Boolean = false) {
-    if (nextEpisodeAutoPlaySearching || nextEpisodeAutoPlayCountdown != null) return
+    if (nextEpisodeAutoPlaySearching || nextEpisodeAutoPlayCountdown != null) {
+        // WATCHFIRST: a search or countdown is already running. A tap means "play it now", and from
+        // here on the user owns the request, so the card logic no longer cancels it.
+        if (!automatic) {
+            nextEpisodeAutoPlayAutomatic = false
+            nextEpisodePlayNowRequested = true
+        }
+        return
+    }
     nextEpisodePreloadTriggered = false
+    nextEpisodePlayNowRequested = false
     val playbackKey = activePlaybackKey
     val nextVideoId = nextEpisodeInfo?.takeIf { it.hasAired }?.videoId ?: return
+    // WATCHFIRST: an automatic request survives a momentary buffering or error near the end; it is
+    // dropped only when the user seeks clearly back, dismisses the card or turns auto-play off.
     fun isCurrentRequest(): Boolean = playbackKey == activePlaybackKey &&
         nextEpisodeInfo?.videoId == nextVideoId &&
-        (!automatic || (
+        (!nextEpisodeAutoPlayAutomatic || (
+            playerSettingsUiState.streamAutoPlayNextEpisodeEnabled &&
+                !nextEpisodeCardDismissed && !isClearlyBeforeNextEpisodeThreshold()
+            ))
+    if (automatic && !(
             playerSettingsUiState.streamAutoPlayNextEpisodeEnabled &&
                 !nextEpisodeCardDismissed && isAtNextEpisodeThreshold()
-            ))
-    if (!isCurrentRequest()) return
+            )
+    ) return
     nextEpisodeAutoPlayAutomatic = automatic
 
     scope.launchPlayerNextEpisodeAutoPlay(
@@ -525,6 +540,8 @@ internal fun PlayerScreenRuntime.playNextEpisode(automatic: Boolean = false) {
         onNextEpisodeCardVisibleChanged = {
             if (playbackKey == activePlaybackKey) showNextEpisodeCard = it
         },
+        userInitiated = !automatic,
+        shouldPlayNow = { nextEpisodePlayNowRequested },
     )?.let { job ->
         nextEpisodeAutoPlayJob = job
     }

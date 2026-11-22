@@ -375,7 +375,7 @@ private fun PlayerScreenRuntime.RenderPlayerControls(
             releaseInfo = metaUiState.meta?.takeIf { it.id == parentMetaId }?.releaseInfo,
             badges = playerBadges,
             hideDetails = activeSkipInterval != null && !skipIntervalDismissed,
-            onNextEpisodeClick = if (nextEpisodeInfo?.hasAired == true && !nextEpisodeAutoPlaySearching && nextEpisodeAutoPlayCountdown == null) {
+            onNextEpisodeClick = if (nextEpisodeInfo?.hasAired == true) {
                 {
                     if (!partyBlocksControl()) playNextEpisode()
                 }
